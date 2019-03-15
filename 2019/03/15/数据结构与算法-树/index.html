@@ -6,28 +6,29 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>数据结构与算法-动态规划 | CodeYuan</title>
+  <title>数据结构与算法-树 | CodeYuan</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="动态规划不知道大家有没有听说这样的说法 ​    贪心：一条路走到黑，就一次机会，只能哪边看着顺眼走哪边；​    回溯：一条路走到黑，无数次重来的机会，还怕我走不出来；​    动态规划：拥有上帝视角，手握无数平行宇宙的历史存档， 同时发展出无数个未来；  因此动态规划是一种很好用的算法。 经典的动态规划问题：0-1背包、0-1背包升级版、青蛙跳变态版、棋盘的最小路径等。 什么时候可以用动态规划">
+  <meta name="description" content="二叉树二叉树的前序遍历、中序遍历、后序遍历。  代码实现： 1234567891011121314151617181920void preOrder(Node* root) &amp;#123;  if (root == null) return;  print root // 此处为伪代码，表示打印 root 节点  preOrder(root-&amp;gt;left);  preOrder(root-&amp;gt">
 <meta name="keywords" content="数据结构与算法">
 <meta property="og:type" content="article">
-<meta property="og:title" content="数据结构与算法-动态规划">
-<meta property="og:url" content="http://yoursite.com/2019/03/15/数据结构与算法-动态规划/index.html">
+<meta property="og:title" content="数据结构与算法-树">
+<meta property="og:url" content="http://yoursite.com/2019/03/15/数据结构与算法-树/index.html">
 <meta property="og:site_name" content="CodeYuan">
-<meta property="og:description" content="动态规划不知道大家有没有听说这样的说法 ​    贪心：一条路走到黑，就一次机会，只能哪边看着顺眼走哪边；​    回溯：一条路走到黑，无数次重来的机会，还怕我走不出来；​    动态规划：拥有上帝视角，手握无数平行宇宙的历史存档， 同时发展出无数个未来；  因此动态规划是一种很好用的算法。 经典的动态规划问题：0-1背包、0-1背包升级版、青蛙跳变态版、棋盘的最小路径等。 什么时候可以用动态规划">
+<meta property="og:description" content="二叉树二叉树的前序遍历、中序遍历、后序遍历。  代码实现： 1234567891011121314151617181920void preOrder(Node* root) &amp;#123;  if (root == null) return;  print root // 此处为伪代码，表示打印 root 节点  preOrder(root-&amp;gt;left);  preOrder(root-&amp;gt">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="https://static001.geekbang.org/resource/image/42/ea/42ca6cec4ad034fc3e5c0605fbacecea.jpg">
-<meta property="og:image" content="https://static001.geekbang.org/resource/image/aa/b5/aaf51df520ea6b8056f4e62aed81a5b5.jpg">
-<meta property="og:image" content="https://static001.geekbang.org/resource/image/bb/7e/bbbb934247219db8299bd46dba9dd47e.jpg">
-<meta property="og:image" content="https://static001.geekbang.org/resource/image/65/9f/652dff86c5dcc6a0e2a0de9a814b079f.jpg">
-<meta property="og:image" content="https://static001.geekbang.org/resource/image/64/65/64403695861da87f41f7b2ec83d44365.jpg">
-<meta property="og:image" content="https://static001.geekbang.org/resource/image/b3/ca/b3f0de1c81533a0d24c43426eaf09aca.jpg">
-<meta property="og:image" content="https://static001.geekbang.org/resource/image/05/7d/05a48baf7fb4d251bf5078840079107d.jpg">
-<meta property="og:updated_time" content="2019-03-15T08:06:11.827Z">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/ab/16/ab103822e75b5b15c615b68560cb2416.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/f3/ae/f3bb11b6d4a18f95aa19e11f22b99bae.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/96/2a/96b3d86ed9b7c4f399e8357ceed0db2a.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/da/c5/daa9fb557726ee6183c5b80222cfc5c5.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/29/2c/299c615bc2e00dc32225f4d9e3490e2c.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/3f/5f/3f59a40e3d927f567022918d89590a5f.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/fb/ff/fb7b320efd59a05469d6d6fcf0c98eff.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/25/17/254a4800703d31612c0af63870260517.jpg">
+<meta property="og:updated_time" content="2019-03-15T13:34:32.219Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="数据结构与算法-动态规划">
-<meta name="twitter:description" content="动态规划不知道大家有没有听说这样的说法 ​    贪心：一条路走到黑，就一次机会，只能哪边看着顺眼走哪边；​    回溯：一条路走到黑，无数次重来的机会，还怕我走不出来；​    动态规划：拥有上帝视角，手握无数平行宇宙的历史存档， 同时发展出无数个未来；  因此动态规划是一种很好用的算法。 经典的动态规划问题：0-1背包、0-1背包升级版、青蛙跳变态版、棋盘的最小路径等。 什么时候可以用动态规划">
-<meta name="twitter:image" content="https://static001.geekbang.org/resource/image/42/ea/42ca6cec4ad034fc3e5c0605fbacecea.jpg">
+<meta name="twitter:title" content="数据结构与算法-树">
+<meta name="twitter:description" content="二叉树二叉树的前序遍历、中序遍历、后序遍历。  代码实现： 1234567891011121314151617181920void preOrder(Node* root) &amp;#123;  if (root == null) return;  print root // 此处为伪代码，表示打印 root 节点  preOrder(root-&amp;gt;left);  preOrder(root-&amp;gt">
+<meta name="twitter:image" content="https://static001.geekbang.org/resource/image/ab/16/ab103822e75b5b15c615b68560cb2416.jpg">
   
     <link rel="alternative" href="/atom.xml" title="CodeYuan" type="application/atom+xml">
   
@@ -163,72 +164,73 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-数据结构与算法-动态规划" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-数据结构与算法-树" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 class="article-title" itemprop="name">
-      数据结构与算法-动态规划
+      数据结构与算法-树
     </h1>
   
 
         
-        <a href="/2019/03/15/数据结构与算法-动态规划/" class="archive-article-date">
-  	<time datetime="2019-03-15T07:04:51.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-15</time>
+        <a href="/2019/03/15/数据结构与算法-树/" class="archive-article-date">
+  	<time datetime="2019-03-15T11:37:35.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-15</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="动态规划"><a href="#动态规划" class="headerlink" title="动态规划"></a>动态规划</h1><p>不知道大家有没有听说这样的说法</p>
-<p>​    贪心：一条路走到黑，就一次机会，只能哪边看着顺眼走哪边；<br>​    回溯：一条路走到黑，无数次重来的机会，还怕我走不出来；<br>​    动态规划：拥有上帝视角，手握无数平行宇宙的历史存档， 同时发展出无数个未来； </p>
-<p>因此动态规划是一种很好用的算法。</p>
-<p>经典的动态规划问题：0-1背包、0-1背包升级版、青蛙跳变态版、棋盘的最小路径等。</p>
-<h2 id="什么时候可以用动态规划？"><a href="#什么时候可以用动态规划？" class="headerlink" title="什么时候可以用动态规划？"></a>什么时候可以用动态规划？</h2><p>虽然说有一个模型三个特征，但个人还是通过一个流程来判断是否可以使用动态规划。</p>
-<p>【注】一个模型：多阶段决策最优解模型</p>
-<p>​        三个特征：最优子结构、无后效性和重复子问题</p>
-<h3 id="个人总结流程"><a href="#个人总结流程" class="headerlink" title="个人总结流程"></a>个人总结流程</h3><p>我们假设背包的最大承载重量是 9。我们有 5 个不同的物品，每个物品的重量分别是 2，2，4，6，3。在满足背包最大重量限制的前提下，背包中物品总重量的最大值是多少？</p>
-<p><strong>看问题判断：</strong></p>
-<ol>
-<li>找最优解</li>
-<li>是否多阶段</li>
+        <h1 id="二叉树"><a href="#二叉树" class="headerlink" title="二叉树"></a>二叉树</h1><p>二叉树的前序遍历、中序遍历、后序遍历。</p>
+<p><img src="https://static001.geekbang.org/resource/image/ab/16/ab103822e75b5b15c615b68560cb2416.jpg" alt="img"></p>
+<p>代码实现：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">preOrder</span><span class="params">(Node* root)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (root == null) <span class="keyword">return</span>;</span><br><span class="line">  print root <span class="comment">// 此处为伪代码，表示打印 root 节点</span></span><br><span class="line">  preOrder(root-&gt;left);</span><br><span class="line">  preOrder(root-&gt;right);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">inOrder</span><span class="params">(Node* root)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (root == null) <span class="keyword">return</span>;</span><br><span class="line">  inOrder(root-&gt;left);</span><br><span class="line">  print root <span class="comment">// 此处为伪代码，表示打印 root 节点</span></span><br><span class="line">  inOrder(root-&gt;right);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">postOrder</span><span class="params">(Node* root)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (root == null) <span class="keyword">return</span>;</span><br><span class="line">  postOrder(root-&gt;left);</span><br><span class="line">  postOrder(root-&gt;right);</span><br><span class="line">  print root <span class="comment">// 此处为伪代码，表示打印 root 节点</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="二叉查找树（BST"><a href="#二叉查找树（BST" class="headerlink" title="二叉查找树（BST)"></a>二叉查找树（BST)</h1><p>二叉查找树，在树中的任意一个节点，其左子树中的<strong>每个节点的值</strong>，都要小于这个节点的值；而右子树节点的值都大于这个节点的值。</p>
+<p><img src="https://static001.geekbang.org/resource/image/f3/ae/f3bb11b6d4a18f95aa19e11f22b99bae.jpg" alt="img"></p>
+<h4 id="1-二叉查找树的查找操作"><a href="#1-二叉查找树的查找操作" class="headerlink" title="1.二叉查找树的查找操作"></a>1.二叉查找树的查找操作</h4><ol>
+<li>取根节点，如果是，返回；</li>
+<li>若比根节点小，就在左子树中递归查找；</li>
+<li>若比根节点大，就在右子树中递归查找；</li>
 </ol>
-<p><strong>画递归树：</strong></p>
-<p><img src="https://static001.geekbang.org/resource/image/42/ea/42ca6cec4ad034fc3e5c0605fbacecea.jpg" alt="0-1背包问题递归树"></p>
+<p><img src="https://static001.geekbang.org/resource/image/96/2a/96b3d86ed9b7c4f399e8357ceed0db2a.jpg" alt="img"></p>
+<p>代码实现：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BinarySearchTree</span> &#123;</span></span><br><span class="line">  <span class="keyword">private</span> Node* tree;</span><br><span class="line">    </span><br><span class="line">  <span class="function"><span class="keyword">public</span> Node <span class="title">find</span><span class="params">(<span class="keyword">int</span> data)</span> </span>&#123;</span><br><span class="line">    Node* p = tree;		</span><br><span class="line">    <span class="keyword">while</span> (p != null) &#123;						<span class="comment">//节点遍历到空</span></span><br><span class="line">      <span class="keyword">if</span> (data &lt; p-&gt;data) p = p-&gt;left;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> (data &gt; p-&gt;data) p = p-&gt;right;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">return</span> p;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> null;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-二叉查找树的插入操作"><a href="#2-二叉查找树的插入操作" class="headerlink" title="2.二叉查找树的插入操作"></a>2.二叉查找树的插入操作</h4><p>从根节点开始，依次<strong>比较</strong>要插入的数据和节点的<strong>大小关系</strong></p>
+<p>分为几种情况：</p>
 <ol>
-<li>从第一个阶段开始（根节点），观察有多少种决策可以选择。</li>
-<li>从第二个阶段开始（子树），从观察有多少种决策可以选择。</li>
-<li>好，停。这时候你就大概会有一种感觉，就是”重复“。</li>
+<li><u>插入数据<strong>比当前节点大</strong></u>（前提1），且节点<strong>右子树为空</strong>，则新数据直接当前节点的<strong>右子节点</strong>；</li>
+<li>若不为空，就再递归遍历右子树，直到遇到情况1；</li>
+<li><u>插入数据<strong>比当前节点小</strong></u>（前提2），且节点<strong>左子树为空</strong>，则新数据直接当前节点的<strong>左子节点</strong>；</li>
+<li>若不为空，就再递归遍历左子树，直到遇到情况3；</li>
 </ol>
-<p>如上图是0-1背包问题的递归树，递归树中的每个节点表示一种状态，我们用（i, cw）来表示。其中，i 表示将要决策第几个物品是否装入背包，cw 表示当前背包中物品的总重量。</p>
-<p>PS.图参考自王争《数据结构与算法之美》</p>
-<p><strong>画状态转移表：</strong></p>
+<p><img src="https://static001.geekbang.org/resource/image/da/c5/daa9fb557726ee6183c5b80222cfc5c5.jpg" alt="img"></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">insert</span><span class="params">(<span class="keyword">int</span> data)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (tree == null) &#123;			<span class="comment">//空树</span></span><br><span class="line">    tree = <span class="keyword">new</span> Node(data);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  Node* p = tree;</span><br><span class="line">  <span class="keyword">while</span> (p != null) &#123;</span><br><span class="line">    <span class="keyword">if</span> (data &gt; p-&gt;data) &#123;		</span><br><span class="line">      <span class="keyword">if</span> (p-&gt;right == null) &#123;			<span class="comment">//情况1</span></span><br><span class="line">       p-&gt;right = <span class="keyword">new</span> Node(data);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      p = p-&gt;right;						<span class="comment">//情况2</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123; 							<span class="comment">// data &lt; p.data</span></span><br><span class="line">      <span class="keyword">if</span> (p-&gt;left == null) &#123;			<span class="comment">//情况3</span></span><br><span class="line">        p-&gt;left = <span class="keyword">new</span> Node(data);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      p = p-&gt;left;						<span class="comment">//情况4</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-二叉查找树的删除操作"><a href="#3-二叉查找树的删除操作" class="headerlink" title="3.二叉查找树的删除操作"></a>3.二叉查找树的删除操作</h4><p>三种情况（<strong>都是要父节点</strong>）：</p>
 <ol>
-<li>先画二维的状态转移表；（这里行列数代表的意义要明确）</li>
-<li>手工填一部分状态转移表；</li>
-<li>找到状态转移的规律；</li>
-<li>总结出状态转移状态方程；</li>
+<li>该节点没有<strong>子节点</strong>，只需将父节点指向该节点的指针<u>置NULL</u>；</li>
+<li>该节点只有一个<strong>子节点</strong>，只需将父节点指向该节点的指针<u>指向该节点的子节点</u>；</li>
+<li>该节点有两个<strong>子节点</strong>：<strong>1.</strong>找到<u>该节点右子树中的最小节点</u> <strong>2.</strong><u>替换</u>到该待删除的节点  3.再<u>删除掉这个最小节点</u>（有右节点也不怕，用情况2）。</li>
 </ol>
-<p><img src="https://static001.geekbang.org/resource/image/aa/b5/aaf51df520ea6b8056f4e62aed81a5b5.jpg" alt></p>
-<p><img src="https://static001.geekbang.org/resource/image/bb/7e/bbbb934247219db8299bd46dba9dd47e.jpg" alt="状态转移表"></p>
-<p><strong>代码实现</strong></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">weight: 物品重量，n: 物品个数，w: 背包可承载重量</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">knapsack</span><span class="params">(<span class="keyword">int</span>[] weight, <span class="keyword">int</span> n, <span class="keyword">int</span> w)</span> </span>&#123;</span><br><span class="line">  boolean[][] states = <span class="keyword">new</span> boolean[n][w+<span class="number">1</span>]; <span class="comment">// 默认值 false</span></span><br><span class="line">  states[<span class="number">0</span>][<span class="number">0</span>] = <span class="literal">true</span>;  <span class="comment">// 第一行的数据要特殊处理，可以利用哨兵优化</span></span><br><span class="line">  states[<span class="number">0</span>][weight[<span class="number">0</span>]] = <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; n; ++i) &#123; <span class="comment">// 动态规划状态转移</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt;= w; ++j) &#123;<span class="comment">// 不把第 i 个物品放入背包</span></span><br><span class="line">      <span class="keyword">if</span> (states[i<span class="number">-1</span>][j] == <span class="literal">true</span>) states[i][j] = states[i<span class="number">-1</span>][j];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt;= w-weight[i]; ++j) &#123;<span class="comment">// 把第 i 个物品放入背包</span></span><br><span class="line">      <span class="keyword">if</span> (states[i<span class="number">-1</span>][j]==<span class="literal">true</span>) states[i][j+weight[i]] = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = w; i &gt;= <span class="number">0</span>; --i) &#123; <span class="comment">// 输出结果</span></span><br><span class="line">    <span class="keyword">if</span> (states[n<span class="number">-1</span>][i] == <span class="literal">true</span>) <span class="keyword">return</span> i;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>多写多练，就能有自己的一套方法和技巧。</p>
-<p>推荐从0-1背包和青蛙跳变态版开始练。</p>
-<h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><p>还有的动态规划问题，是从多个“方向”而来。</p>
-<p>如棋盘的最短路径问题：</p>
-<p>假设我们有一个 n 乘以 n 的矩阵 w。矩阵存储的都是正整数。棋子起始位置在右下角。我们将棋子从左上角移动到右下角。每次只能向右或者向下移动一位。从左上角到右下角，会有很多不同的路径可以走。我们把每条路径经过的数字加起来看作路径的长度。那从左上角移动到右下角的最短路径长度是多少呢？</p>
-<p><img src="https://static001.geekbang.org/resource/image/65/9f/652dff86c5dcc6a0e2a0de9a814b079f.jpg" alt="棋盘"></p>
-<p>那么他就会从两个方向来，只有可能从 (i, j-1) 或者 (i-1, j) 来。</p>
-<p><img src="https://static001.geekbang.org/resource/image/64/65/64403695861da87f41f7b2ec83d44365.jpg" alt="img"></p>
-<p>因此状态转移表变成下图</p>
-<p><img src="https://static001.geekbang.org/resource/image/b3/ca/b3f0de1c81533a0d24c43426eaf09aca.jpg" alt="状态转移表"></p>
-<p><img src="https://static001.geekbang.org/resource/image/05/7d/05a48baf7fb4d251bf5078840079107d.jpg" alt="img"></p>
-<p>我的动态规划之路还有很多要学，大家一起进步！</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>数据结构与算法之美 <a href="https://time.geekbang.org/column/article/75702" target="_blank" rel="noopener">https://time.geekbang.org/column/article/75702</a></p>
+<p><img src="https://static001.geekbang.org/resource/image/29/2c/299c615bc2e00dc32225f4d9e3490e2c.jpg" alt="img"></p>
+<p>代码实现：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">delete</span><span class="params">(<span class="keyword">int</span> data)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//////////////</span></span><br><span class="line">    <span class="comment">//第一步：查找//</span></span><br><span class="line">    <span class="comment">//////////////</span></span><br><span class="line">  Node* p = tree; <span class="comment">// p 指向要删除的节点，初始化指向根节点</span></span><br><span class="line">  Node* pp = null; <span class="comment">// pp 记录的是 p 的父节点</span></span><br><span class="line">  <span class="keyword">while</span> (p != null &amp;&amp; p-&gt;data != data) &#123;</span><br><span class="line">    pp = p;</span><br><span class="line">    <span class="keyword">if</span> (data &gt; p-&gt;data) p = p-&gt;right;</span><br><span class="line">    <span class="keyword">else</span> p = p-&gt;left;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (p == null) <span class="keyword">return</span>; <span class="comment">// 没有找到</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//p永远都是要待删除的节点//</span></span><br><span class="line">	<span class="comment">//////////////////////////////</span></span><br><span class="line">    <span class="comment">//情况3：要删除的节点有两个子节点//</span></span><br><span class="line">    <span class="comment">//////////////////////////////</span></span><br><span class="line">  <span class="keyword">if</span> (p-&gt;left != null &amp;&amp; p-&gt;right != null) &#123; <span class="comment">// 查找右子树中最小节点</span></span><br><span class="line">    Node* minP = p-&gt;right;</span><br><span class="line">    Node* minPP = p; <span class="comment">// minPP 表示 minP 的父节点</span></span><br><span class="line">    <span class="keyword">while</span> (minP-&gt;left != null) &#123;</span><br><span class="line">      minPP = minP;</span><br><span class="line">      minP = minP-&gt;left;</span><br><span class="line">    &#125;</span><br><span class="line">    p-&gt;data = minP-&gt;data; <span class="comment">// 将 minP 的数据替换到 p 中</span></span><br><span class="line">    p = minP; <span class="comment">//* 下面就变成了删除 minP 了，留给下面的情况2或者情况1*//</span></span><br><span class="line">    pp = minPP;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">////////////////////////////</span></span><br><span class="line">    <span class="comment">//情况2：删除节点仅有一个子节点//</span></span><br><span class="line">    <span class="comment">////////////////////////////</span></span><br><span class="line">  Node* child; <span class="comment">// p 的子节点</span></span><br><span class="line">  <span class="keyword">if</span> (p-&gt;left != null) child = p-&gt;left;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (p-&gt;right != null) child = p-&gt;right;</span><br><span class="line">  <span class="keyword">else</span> child = null;	</span><br><span class="line">    </span><br><span class="line">	<span class="comment">//////////////////////////////</span></span><br><span class="line">    <span class="comment">//情况1：删除节点是叶子节点//</span></span><br><span class="line">    <span class="comment">//////////////////////////////</span></span><br><span class="line">  <span class="keyword">if</span> (pp == null) tree = child; <span class="comment">// 删除的是根节点</span></span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (pp-&gt;left == p) pp-&gt;left = child;</span><br><span class="line">  <span class="keyword">else</span> pp-&gt;right = child;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="4-二叉查找树的其他操作"><a href="#4-二叉查找树的其他操作" class="headerlink" title="4.二叉查找树的其他操作"></a>4.二叉查找树的其他操作</h4><p><strong>中序遍历二叉查找树，就可以输出有序的数据序列，时间复杂度是O(n)。</strong>因此，二叉查找树也叫作二叉排序树。</p>
+<h4 id="5-支持重复数据的二叉查找树"><a href="#5-支持重复数据的二叉查找树" class="headerlink" title="5.支持重复数据的二叉查找树"></a>5.支持重复数据的二叉查找树</h4><p>插入：</p>
+<p>在找插入位置时，如果碰到一个节点的值，与待插入数据的值相同，那就把这个待插入的值当做大于这个节点的值来处理。即：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if (data &gt;= p-&gt;data)</span><br></pre></td></tr></table></figure>
+<p><img src="https://static001.geekbang.org/resource/image/3f/5f/3f59a40e3d927f567022918d89590a5f.jpg" alt="img"></p>
+<p>查找：</p>
+<p>遇到相同的节点，并不停止查找，而是继续在右子树中查找，直到遇到叶子节点才停止。把所有值相同的节点都找出来。</p>
+<p><img src="https://static001.geekbang.org/resource/image/fb/ff/fb7b320efd59a05469d6d6fcf0c98eff.jpg" alt="img"></p>
+<p>删除：</p>
+<p>先查找，再用前面的方法依次删除。</p>
+<p><img src="https://static001.geekbang.org/resource/image/25/17/254a4800703d31612c0af63870260517.jpg" alt="img"></p>
+<h4 id="6-二叉查找树的时间复杂度"><a href="#6-二叉查找树的时间复杂度" class="headerlink" title="6.二叉查找树的时间复杂度"></a>6.二叉查找树的时间复杂度</h4><p>不稳定。</p>
+<p>最坏变成链表，查找变为O(n)；</p>
+<p>最好是完全二叉树，查找、删除、插入都为O(height)；</p>
 
       
 
@@ -324,7 +326,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2019/03/15/数据结构与算法-动态规划/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2019/03/15/数据结构与算法-树/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -338,18 +340,9 @@
   
 <nav id="article-nav">
   
-    <a href="/2019/03/15/常用算法的时间复杂度/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          常用算法的时间复杂度
-        
-      </div>
-    </a>
   
-  
-    <a href="/2019/03/13/深度探索C-对象模型-读书笔记/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">深度探索C++对象模型-读书笔记</div>
+    <a href="/2019/03/15/常用算法的时间复杂度/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">常用算法的时间复杂度</div>
       <i class="icon-circle-right"></i>
     </a>
   
