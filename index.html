@@ -152,6 +152,125 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-数据结构与算法-动态规划" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/03/15/数据结构与算法-动态规划/">数据结构与算法-动态规划</a>
+    </h1>
+  
+
+        
+        <a href="/2019/03/15/数据结构与算法-动态规划/" class="archive-article-date">
+  	<time datetime="2019-03-15T07:04:51.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-15</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="动态规划"><a href="#动态规划" class="headerlink" title="动态规划"></a>动态规划</h1><p>不知道大家有没有听说这样的说法</p>
+<p>​    贪心：一条路走到黑，就一次机会，只能哪边看着顺眼走哪边；<br>​    回溯：一条路走到黑，无数次重来的机会，还怕我走不出来；<br>​    动态规划：拥有上帝视角，手握无数平行宇宙的历史存档， 同时发展出无数个未来； </p>
+<p>因此动态规划是一种很好用的算法。</p>
+<p>经典的动态规划问题：0-1背包、0-1背包升级版、青蛙跳变态版、棋盘的最小路径等。</p>
+<h2 id="什么时候可以用动态规划？"><a href="#什么时候可以用动态规划？" class="headerlink" title="什么时候可以用动态规划？"></a>什么时候可以用动态规划？</h2><p>虽然说有一个模型三个特征，但个人还是通过一个流程来判断是否可以使用动态规划。</p>
+<p>【注】一个模型：多阶段决策最优解模型</p>
+<p>​        三个特征：最优子结构、无后效性和重复子问题</p>
+<h3 id="个人总结流程"><a href="#个人总结流程" class="headerlink" title="个人总结流程"></a>个人总结流程</h3><p>我们假设背包的最大承载重量是 9。我们有 5 个不同的物品，每个物品的重量分别是 2，2，4，6，3。在满足背包最大重量限制的前提下，背包中物品总重量的最大值是多少？</p>
+<p><strong>看问题判断：</strong></p>
+<ol>
+<li>找最优解</li>
+<li>是否多阶段</li>
+</ol>
+<p><strong>画递归树：</strong></p>
+<p><img src="https://static001.geekbang.org/resource/image/42/ea/42ca6cec4ad034fc3e5c0605fbacecea.jpg" alt="0-1背包问题递归树"></p>
+<ol>
+<li>从第一个阶段开始（根节点），观察有多少种决策可以选择。</li>
+<li>从第二个阶段开始（子树），从观察有多少种决策可以选择。</li>
+<li>好，停。这时候你就大概会有一种感觉，就是”重复“。</li>
+</ol>
+<p>如上图是0-1背包问题的递归树，递归树中的每个节点表示一种状态，我们用（i, cw）来表示。其中，i 表示将要决策第几个物品是否装入背包，cw 表示当前背包中物品的总重量。</p>
+<p>PS.图参考自王争《数据结构与算法之美》</p>
+<p><strong>画状态转移表：</strong></p>
+<ol>
+<li>先画二维的状态转移表；（这里行列数代表的意义要明确）</li>
+<li>手工填一部分状态转移表；</li>
+<li>找到状态转移的规律；</li>
+<li>总结出状态转移状态方程；</li>
+</ol>
+<p><img src="https://static001.geekbang.org/resource/image/aa/b5/aaf51df520ea6b8056f4e62aed81a5b5.jpg" alt></p>
+<p><img src="https://static001.geekbang.org/resource/image/bb/7e/bbbb934247219db8299bd46dba9dd47e.jpg" alt="状态转移表"></p>
+<p><strong>代码实现</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">weight: 物品重量，n: 物品个数，w: 背包可承载重量</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">knapsack</span><span class="params">(<span class="keyword">int</span>[] weight, <span class="keyword">int</span> n, <span class="keyword">int</span> w)</span> </span>&#123;</span><br><span class="line">  boolean[][] states = <span class="keyword">new</span> boolean[n][w+<span class="number">1</span>]; <span class="comment">// 默认值 false</span></span><br><span class="line">  states[<span class="number">0</span>][<span class="number">0</span>] = <span class="literal">true</span>;  <span class="comment">// 第一行的数据要特殊处理，可以利用哨兵优化</span></span><br><span class="line">  states[<span class="number">0</span>][weight[<span class="number">0</span>]] = <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; n; ++i) &#123; <span class="comment">// 动态规划状态转移</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt;= w; ++j) &#123;<span class="comment">// 不把第 i 个物品放入背包</span></span><br><span class="line">      <span class="keyword">if</span> (states[i<span class="number">-1</span>][j] == <span class="literal">true</span>) states[i][j] = states[i<span class="number">-1</span>][j];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt;= w-weight[i]; ++j) &#123;<span class="comment">// 把第 i 个物品放入背包</span></span><br><span class="line">      <span class="keyword">if</span> (states[i<span class="number">-1</span>][j]==<span class="literal">true</span>) states[i][j+weight[i]] = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = w; i &gt;= <span class="number">0</span>; --i) &#123; <span class="comment">// 输出结果</span></span><br><span class="line">    <span class="keyword">if</span> (states[n<span class="number">-1</span>][i] == <span class="literal">true</span>) <span class="keyword">return</span> i;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>多写多练，就能有自己的一套方法和技巧。</p>
+<p>推荐从0-1背包和青蛙跳变态版开始练。</p>
+<h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><p>还有的动态规划问题，是从多个“方向”而来。</p>
+<p>如棋盘的最短路径问题：</p>
+<p>假设我们有一个 n 乘以 n 的矩阵 w。矩阵存储的都是正整数。棋子起始位置在右下角。我们将棋子从左上角移动到右下角。每次只能向右或者向下移动一位。从左上角到右下角，会有很多不同的路径可以走。我们把每条路径经过的数字加起来看作路径的长度。那从左上角移动到右下角的最短路径长度是多少呢？</p>
+<p><img src="https://static001.geekbang.org/resource/image/65/9f/652dff86c5dcc6a0e2a0de9a814b079f.jpg" alt="棋盘"></p>
+<p>那么他就会从两个方向来，只有可能从 (i, j-1) 或者 (i-1, j) 来。</p>
+<p><img src="https://static001.geekbang.org/resource/image/64/65/64403695861da87f41f7b2ec83d44365.jpg" alt="img"></p>
+<p>因此状态转移表变成下图</p>
+<p><img src="https://static001.geekbang.org/resource/image/b3/ca/b3f0de1c81533a0d24c43426eaf09aca.jpg" alt="状态转移表"></p>
+<p><img src="https://static001.geekbang.org/resource/image/05/7d/05a48baf7fb4d251bf5078840079107d.jpg" alt="img"></p>
+<p>我的动态规划之路还有很多要学，大家一起进步！</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>数据结构与算法之美 <a href="https://time.geekbang.org/column/article/75702" target="_blank" rel="noopener">https://time.geekbang.org/column/article/75702</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">数据结构与算法</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/03/15/数据结构与算法-动态规划/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-深度探索C-对象模型-读书笔记" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -475,14 +594,14 @@
 <li><strong>p</strong>、<strong>c</strong>指针前移，为下一次操作做准备</li>
 </ol>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * struct ListNode &#123;</span></span><br><span class="line"><span class="comment">      int val;</span></span><br><span class="line"><span class="comment"> *     ListNode *next;</span></span><br><span class="line"><span class="comment"> *     ListNode(int x) : val(x), next(NULL) &#123;&#125;</span></span><br><span class="line"><span class="comment"> * &#125;;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">ListNode* <span class="title">reverseList</span><span class="params">(ListNode* head)</span> </span>&#123;</span><br><span class="line">    ListNode *c = head;</span><br><span class="line">    ListNode *p = <span class="literal">NULL</span>;</span><br><span class="line">    ListNode *n = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">while</span>(c != <span class="literal">NULL</span>)&#123;</span><br><span class="line">        n = c-&gt;next;    <span class="comment">//防止丢失链表</span></span><br><span class="line">        c-&gt;next = p;    <span class="comment">//断链</span></span><br><span class="line"></span><br><span class="line">        p = c;			<span class="comment">//向前移动</span></span><br><span class="line">        c = n;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="C:\Users\YDP\AppData\Roaming\Typora\typora-user-images\1552200186522.png" alt="图解"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/16713773-d88de95a56f9a369.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="图解"></p>
 <p>递归：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ListNode* <span class="title">Tback</span><span class="params">(ListNode* A)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(A-&gt;next == <span class="literal">NULL</span> )</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> A;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> </span><br><span class="line">    &#123;</span><br><span class="line">        ListNode* newhead = Tback(A-&gt;next);		</span><br><span class="line">        A-&gt;next-&gt;next = A;		<span class="comment">//A的下一个结点指向A</span></span><br><span class="line">        A-&gt;next = <span class="literal">NULL</span>;			<span class="comment">//A下一个结点的地址为NULL</span></span><br><span class="line">        <span class="keyword">return</span> newhead;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">ListNode* <span class="title">reverseList</span><span class="params">(ListNode* head)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(head == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> head;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        head = Tback(head); </span><br><span class="line">        <span class="keyword">return</span> head;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="C:\Users\YDP\AppData\Roaming\Typora\typora-user-images\1552201265101.png" alt="图解"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/16713773-224578cc78a8c8e8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="图解"></p>
 <h2 id="2-合并两个排序的链表"><a href="#2-合并两个排序的链表" class="headerlink" title="2.合并两个排序的链表"></a>2.合并两个排序的链表</h2><p>用递归！！别装逼，装逼容易翻车，链表这种东西，越少代码量越不容易错。</p>
 <p>要注意的是，在递归算法中，需要将你最后要保留的变量，return出来。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ListNode* <span class="title">Merge</span><span class="params">(ListNode* pHead1, ListNode* pHead2)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(pHead1 == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> pHead2;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(pHead2 == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> pHead1;</span><br><span class="line"></span><br><span class="line">    ListNode* myList = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">if</span>(pHead1-&gt;val &lt; pHead2-&gt;val)&#123;</span><br><span class="line">        myList = pHead1;</span><br><span class="line">        myList-&gt;next = Merge(pHead1-&gt;next, pHead2);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        myList = pHead2;</span><br><span class="line">        myList-&gt;next = Merge(pHead1, pHead2-&gt;next);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> myList;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="F:\Blog\picture\合并链表.png" alt="合并链表"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/16713773-09d5f830d9548315.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="合并链表"></p>
 
       
 
@@ -491,6 +610,17 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">数据结构与算法</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -532,7 +662,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2019/03/10/数据结构与算法-排序/">排序算法总结</a>
+      <a class="article-title" href="/2019/03/10/数据结构与算法-排序/">数据结构与算法-排序</a>
     </h1>
   
 

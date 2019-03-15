@@ -9,20 +9,21 @@
   <title>数据结构与算法-链表 | CodeYuan</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="链表链表的问题，大部分从头指针开始，必要时需要新建一个头结点。 结束条件也多为当前结点为空，或者下一个结点为空。 1.链表反转非递归方式，操作顺序：  计算n指针，确定下个结点的位置 放心断链，指针反转，c指向p p、c指针前移，为下一次操作做准备  1234567891011121314151617181920/* * struct ListNode &amp;#123;      int val; *">
+<meta name="keywords" content="数据结构与算法">
 <meta property="og:type" content="article">
 <meta property="og:title" content="数据结构与算法-链表">
 <meta property="og:url" content="http://yoursite.com/2019/03/10/数据结构与算法-链表/index.html">
 <meta property="og:site_name" content="CodeYuan">
 <meta property="og:description" content="链表链表的问题，大部分从头指针开始，必要时需要新建一个头结点。 结束条件也多为当前结点为空，或者下一个结点为空。 1.链表反转非递归方式，操作顺序：  计算n指针，确定下个结点的位置 放心断链，指针反转，c指向p p、c指针前移，为下一次操作做准备  1234567891011121314151617181920/* * struct ListNode &amp;#123;      int val; *">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="c:/Users/YDP/AppData/Roaming/Typora/typora-user-images/1552200186522.png">
-<meta property="og:image" content="c:/Users/YDP/AppData/Roaming/Typora/typora-user-images/1552201265101.png">
-<meta property="og:image" content="f:/Blog/picture/合并链表.png">
-<meta property="og:updated_time" content="2019-03-14T12:23:53.393Z">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/16713773-d88de95a56f9a369.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/16713773-224578cc78a8c8e8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/16713773-09d5f830d9548315.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp">
+<meta property="og:updated_time" content="2019-03-15T07:08:31.819Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="数据结构与算法-链表">
 <meta name="twitter:description" content="链表链表的问题，大部分从头指针开始，必要时需要新建一个头结点。 结束条件也多为当前结点为空，或者下一个结点为空。 1.链表反转非递归方式，操作顺序：  计算n指针，确定下个结点的位置 放心断链，指针反转，c指向p p、c指针前移，为下一次操作做准备  1234567891011121314151617181920/* * struct ListNode &amp;#123;      int val; *">
-<meta name="twitter:image" content="c:/Users/YDP/AppData/Roaming/Typora/typora-user-images/1552200186522.png">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/16713773-d88de95a56f9a369.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp">
   
     <link rel="alternative" href="/atom.xml" title="CodeYuan" type="application/atom+xml">
   
@@ -187,14 +188,14 @@
 <li><strong>p</strong>、<strong>c</strong>指针前移，为下一次操作做准备</li>
 </ol>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * struct ListNode &#123;</span></span><br><span class="line"><span class="comment">      int val;</span></span><br><span class="line"><span class="comment"> *     ListNode *next;</span></span><br><span class="line"><span class="comment"> *     ListNode(int x) : val(x), next(NULL) &#123;&#125;</span></span><br><span class="line"><span class="comment"> * &#125;;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">ListNode* <span class="title">reverseList</span><span class="params">(ListNode* head)</span> </span>&#123;</span><br><span class="line">    ListNode *c = head;</span><br><span class="line">    ListNode *p = <span class="literal">NULL</span>;</span><br><span class="line">    ListNode *n = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">while</span>(c != <span class="literal">NULL</span>)&#123;</span><br><span class="line">        n = c-&gt;next;    <span class="comment">//防止丢失链表</span></span><br><span class="line">        c-&gt;next = p;    <span class="comment">//断链</span></span><br><span class="line"></span><br><span class="line">        p = c;			<span class="comment">//向前移动</span></span><br><span class="line">        c = n;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="C:\Users\YDP\AppData\Roaming\Typora\typora-user-images\1552200186522.png" alt="图解"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/16713773-d88de95a56f9a369.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="图解"></p>
 <p>递归：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ListNode* <span class="title">Tback</span><span class="params">(ListNode* A)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(A-&gt;next == <span class="literal">NULL</span> )</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> A;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> </span><br><span class="line">    &#123;</span><br><span class="line">        ListNode* newhead = Tback(A-&gt;next);		</span><br><span class="line">        A-&gt;next-&gt;next = A;		<span class="comment">//A的下一个结点指向A</span></span><br><span class="line">        A-&gt;next = <span class="literal">NULL</span>;			<span class="comment">//A下一个结点的地址为NULL</span></span><br><span class="line">        <span class="keyword">return</span> newhead;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">ListNode* <span class="title">reverseList</span><span class="params">(ListNode* head)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(head == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> head;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        head = Tback(head); </span><br><span class="line">        <span class="keyword">return</span> head;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="C:\Users\YDP\AppData\Roaming\Typora\typora-user-images\1552201265101.png" alt="图解"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/16713773-224578cc78a8c8e8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="图解"></p>
 <h2 id="2-合并两个排序的链表"><a href="#2-合并两个排序的链表" class="headerlink" title="2.合并两个排序的链表"></a>2.合并两个排序的链表</h2><p>用递归！！别装逼，装逼容易翻车，链表这种东西，越少代码量越不容易错。</p>
 <p>要注意的是，在递归算法中，需要将你最后要保留的变量，return出来。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ListNode* <span class="title">Merge</span><span class="params">(ListNode* pHead1, ListNode* pHead2)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(pHead1 == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> pHead2;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(pHead2 == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> pHead1;</span><br><span class="line"></span><br><span class="line">    ListNode* myList = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">if</span>(pHead1-&gt;val &lt; pHead2-&gt;val)&#123;</span><br><span class="line">        myList = pHead1;</span><br><span class="line">        myList-&gt;next = Merge(pHead1-&gt;next, pHead2);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        myList = pHead2;</span><br><span class="line">        myList-&gt;next = Merge(pHead1, pHead2-&gt;next);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> myList;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="F:\Blog\picture\合并链表.png" alt="合并链表"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/16713773-09d5f830d9548315.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="合并链表"></p>
 
       
 
@@ -229,6 +230,17 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">数据结构与算法</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -304,7 +316,7 @@
   
   
     <a href="/2019/03/10/数据结构与算法-排序/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">排序算法总结</div>
+      <div class="article-nav-title">数据结构与算法-排序</div>
       <i class="icon-circle-right"></i>
     </a>
   
