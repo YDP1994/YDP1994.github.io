@@ -19,7 +19,7 @@
 <meta property="og:image" content="https://upload-images.jianshu.io/upload_images/16713773-41e96c6a2675700a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp">
 <meta property="og:image" content="https://upload-images.jianshu.io/upload_images/16713773-960ad729be8c5d90.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp">
 <meta property="og:image" content="https://upload-images.jianshu.io/upload_images/16713773-69e348f802a44eac.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/753/format/webp">
-<meta property="og:updated_time" content="2019-03-19T01:26:33.619Z">
+<meta property="og:updated_time" content="2019-03-19T01:47:43.236Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入探索C++对象模型-第一章">
 <meta name="twitter:description" content="说明： ​    不是很清楚的点，用下划线。 ​    解答，用斜体； ​    重点，用粗体加粗； 第一章1.1 C++对象模型与C语言的Struct相比： C++使用class封装之后的布局成本没有增加。  数据成员直接在类对象内，与Struct的情况一样； 成员函数虽然在类中声明，但不在对象（object）中； 每一个non-inline function 只会产生一个函数实例； inlin">
@@ -212,7 +212,7 @@
 <p><img src="https://upload-images.jianshu.io/upload_images/16713773-41e96c6a2675700a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="img"></p>
 <h3 id="加上继承后的C-对象模型（3-4节有讨论）"><a href="#加上继承后的C-对象模型（3-4节有讨论）" class="headerlink" title="加上继承后的C++对象模型（3.4节有讨论）"></a>加上继承后的C++对象模型（3.4节有讨论）</h3><p>作者有几种想法，其中一种是下图：</p>
 <p><img src="https://upload-images.jianshu.io/upload_images/16713773-960ad729be8c5d90.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="img"></p>
-<p>​    <u>在虚拟继承的情况下</u><u>，基类（如上图ios类）不管在继承串链中被派生多少次，永远只会存在一个实例。</u></p>
+<p><u>在虚拟继承的情况下</u><u>，基类（如上图ios类）不管在继承串链中被派生多少次，永远只会存在一个实例。</u></p>
 <h2 id="1-2-关键词所带来的差异"><a href="#1-2-关键词所带来的差异" class="headerlink" title="1.2 关键词所带来的差异"></a>1.2 关键词所带来的差异</h2><p>讲关于Struct与Class之间的故事。</p>
 <h2 id="1-3-对象的差异"><a href="#1-3-对象的差异" class="headerlink" title="1.3 对象的差异"></a>1.3 对象的差异</h2><h4 id="C-支持三种程序设计范式："><a href="#C-支持三种程序设计范式：" class="headerlink" title="C++支持三种程序设计范式："></a>C++支持三种程序设计范式：</h4><ul>
 <li><p>程序模型（如C语言）；</p>
@@ -233,23 +233,23 @@
 <li><p>经由dynamic_cast和typied运算符；</p>
 </li>
 </ol>
-<p>​    多态的主要用途是经由<strong>一个共同的接口</strong>来影响类型的封装，这个接口通常被定义<strong>在一个抽象的基类中</strong>。这个共享接口是<strong>以虚函数机制引发</strong>的，它可以<strong>在执行期</strong>根据object的真正类型解析出到底是哪一个函数实例被调用。</p>
+<p>多态的主要用途是经由<strong>一个共同的接口</strong>来影响类型的封装，这个接口通常被定义<strong>在一个抽象的基类中</strong>。这个共享接口是<strong>以虚函数机制引发</strong>的，它可以<strong>在执行期</strong>根据object的真正类型解析出到底是哪一个函数实例被调用。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">rotate</span><span class="params">(X datum, <span class="keyword">const</span> X *pointer, <span class="keyword">const</span> X &amp;reference)</span></span>&#123;</span><br><span class="line">    <span class="comment">//在执行期以前，无法确定到底调用了哪一个rotate实例</span></span><br><span class="line">    (*pointer).rotate();</span><br><span class="line">    reference.rotate();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//总是调用datum中的rotate，不管datum中的rotate是否为虚函数</span></span><br><span class="line">    datum.rotate();</span><br><span class="line">&#125;</span><br><span class="line">main()&#123;</span><br><span class="line">    Z z;	<span class="comment">//Z是X的一个子类</span></span><br><span class="line">    </span><br><span class="line">    rotate(z,&amp;z,z);	<span class="comment">//pointer和reference的函数调用会被动态完成，在这里都调用Z::rotate()</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h4 id="一个class-object-需要多少内存"><a href="#一个class-object-需要多少内存" class="headerlink" title="一个class object 需要多少内存"></a>一个class object 需要多少内存</h4><ol>
 <li>其<strong>非静态数据成员的总和</strong>大小；</li>
 <li>加上任何由于<strong>边界调整</strong>的需求而填补上去的空间，可能存在于members之间，也可能存在于集合体的边界；</li>
 <li>加上为了支持 virtual 而由内部产生的任何额外负担，vptr等；</li>
 </ol>
-<h4 id="指针类型"><a href="#指针类型" class="headerlink" title="指针类型"></a>指针类型</h4><p>​    一个指向ZoomAnimal的指针是如何与一个指向整数的指针不同？</p>
-<p>​    从内存上看，没有不同！一个指针，不管它指向哪一种数据类型，指针本身所需的内存大小是固定的。</p>
-<p>​    <strong>而是，“指针类型”会指导编译器如何解析某个特定地址中的内存内容及其大小。</strong></p>
-<h4 id="加上多态以后的指针类型"><a href="#加上多态以后的指针类型" class="headerlink" title="加上多态以后的指针类型"></a>加上多态以后的指针类型</h4><p>​    假设Bear object放在地址1000处，一个Bear指针和一个ZoomAnimal有什么不同？</p>
+<h4 id="指针类型"><a href="#指针类型" class="headerlink" title="指针类型"></a>指针类型</h4><p>一个指向ZoomAnimal的指针是如何与一个指向整数的指针不同？</p>
+<p>从内存上看，没有不同！一个指针，不管它指向哪一种数据类型，指针本身所需的内存大小是固定的。</p>
+<p><strong>而是，“指针类型”会指导编译器如何解析某个特定地址中的内存内容及其大小。</strong></p>
+<h4 id="加上多态以后的指针类型"><a href="#加上多态以后的指针类型" class="headerlink" title="加上多态以后的指针类型"></a>加上多态以后的指针类型</h4><p>假设Bear object放在地址1000处，一个Bear指针和一个ZoomAnimal有什么不同？</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Bear b;</span><br><span class="line">ZoomAnimal *pz = &amp;b;</span><br><span class="line">Bear *pb = &amp;b;</span><br></pre></td></tr></table></figure>
-<p>​    如图（图中两个指针都是Bear，但可假设其中一个为ZoomAnimal）：</p>
+<p>如图（图中两个指针都是Bear，但可假设其中一个为ZoomAnimal）：</p>
 <p><img src="https://upload-images.jianshu.io/upload_images/16713773-69e348f802a44eac.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/753/format/webp" alt="img"></p>
-<p>​    它们每一个都指向Bear object的第一个byte。其间的差别是，<strong>pb所涵盖的地址包含整个Bear object，而pz所涵盖的地址只包含Bear object中的ZoomAnimal subobject。</strong></p>
+<p>它们每一个都指向Bear object的第一个byte。其间的差别是，<strong>pb所涵盖的地址包含整个Bear object，而pz所涵盖的地址只包含Bear object中的ZoomAnimal subobject。</strong></p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Bear b;</span><br><span class="line">ZoomAnimal za = b;		<span class="comment">//这个引起切割</span></span><br></pre></td></tr></table></figure>
-<p>​    当一个基类对象被初始化为一个子类对象，那么子类对象就会被切割以塞入较小的base type内存中，多态于是不再呈现。</p>
+<p>当一个基类对象被初始化为一个子类对象，那么子类对象就会被切割以塞入较小的base type内存中，多态于是不再呈现。</p>
 <p>​    </p>
 
       
