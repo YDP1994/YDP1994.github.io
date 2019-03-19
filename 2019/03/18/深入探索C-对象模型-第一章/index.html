@@ -6,19 +6,24 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Hello World | CodeYuan</title>
+  <title>深入探索C++对象模型-第一章 | CodeYuan</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+  <meta name="description" content="说明： ​    不是很清楚的点，用下划线。 ​    解答，用斜体； ​    重点，用粗体加粗； 第一章1.1 C++对象模型与C语言的Struct相比： C++使用class封装之后的布局成本没有增加。  数据成员直接在类对象内，与Struct的情况一样； 成员函数虽然在类中声明，但不在对象（object）中； 每一个non-inline function 只会产生一个函数实例； inlin">
+<meta name="keywords" content="深入探索C++对象模型-学习总结">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hello World">
-<meta property="og:url" content="http://yoursite.com/2019/03/09/hello-world/index.html">
+<meta property="og:title" content="深入探索C++对象模型-第一章">
+<meta property="og:url" content="http://yoursite.com/2019/03/18/深入探索C-对象模型-第一章/index.html">
 <meta property="og:site_name" content="CodeYuan">
-<meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+<meta property="og:description" content="说明： ​    不是很清楚的点，用下划线。 ​    解答，用斜体； ​    重点，用粗体加粗； 第一章1.1 C++对象模型与C语言的Struct相比： C++使用class封装之后的布局成本没有增加。  数据成员直接在类对象内，与Struct的情况一样； 成员函数虽然在类中声明，但不在对象（object）中； 每一个non-inline function 只会产生一个函数实例； inlin">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-03-09T05:28:43.851Z">
+<meta property="og:image" content="f:/Blog/picture/深度探索C++/1-3.png">
+<meta property="og:image" content="f:/Blog/picture/深度探索C++/1-4.png">
+<meta property="og:image" content="f:/Blog/picture/深度探索C++/1-5.png">
+<meta property="og:updated_time" content="2019-03-19T01:12:46.285Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hello World">
-<meta name="twitter:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+<meta name="twitter:title" content="深入探索C++对象模型-第一章">
+<meta name="twitter:description" content="说明： ​    不是很清楚的点，用下划线。 ​    解答，用斜体； ​    重点，用粗体加粗； 第一章1.1 C++对象模型与C语言的Struct相比： C++使用class封装之后的布局成本没有增加。  数据成员直接在类对象内，与Struct的情况一样； 成员函数虽然在类中声明，但不在对象（object）中； 每一个non-inline function 只会产生一个函数实例； inlin">
+<meta name="twitter:image" content="f:/Blog/picture/深度探索C++/1-3.png">
   
     <link rel="alternative" href="/atom.xml" title="CodeYuan" type="application/atom+xml">
   
@@ -154,35 +159,98 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-hello-world" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="n-深入探索C-对象模型-第一章" class="article article-type-n " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 class="article-title" itemprop="name">
-      Hello World
+      深入探索C++对象模型-第一章
     </h1>
   
 
         
-        <a href="/2019/03/09/hello-world/" class="archive-article-date">
-  	<time datetime="2019-03-09T05:28:43.851Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-09</time>
+        <a href="/2019/03/18/深入探索C-对象模型-第一章/" class="archive-article-date">
+  	<time datetime="2019-03-18T12:29:46.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-18</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+        <p>说明：</p>
+<p>​    <u>不是很清楚的点</u>，用下划线。</p>
+<p>​    <em>解答</em>，用斜体；</p>
+<p>​    <strong>重点</strong>，用粗体加粗；</p>
+<h1 id="第一章"><a href="#第一章" class="headerlink" title="第一章"></a>第一章</h1><h2 id="1-1-C-对象模型"><a href="#1-1-C-对象模型" class="headerlink" title="1.1 C++对象模型"></a>1.1 C++对象模型</h2><p>与C语言的Struct相比：</p>
+<p>C++使用class封装之后的布局<strong>成本没有增加</strong>。</p>
+<ol>
+<li>数据成员直接在类对象内，与Struct的情况一样；</li>
+<li>成员函数虽然在类中声明，但<u>不在对象（object）中</u>；</li>
+<li><u>每一个non-inline function 只会产生一个函数实例</u>；</li>
+<li>inline function则会在每一个调用使用的地方产生一个函数实例（在调用点展开函数体）；</li>
+</ol>
+<p>class在布局以及存取时间上主要的额外负担是由virtual 引起：</p>
+<ol>
+<li>虚拟函数机制：用以支持一个有效率的“执行期绑定（runtime binding)”；</li>
+<li>虚拟基类：用以实现“多次出现在继承体系中的 base class ,有一个单一的被共享的实体”；</li>
+</ol>
+<h3 id="C-对象模型"><a href="#C-对象模型" class="headerlink" title="C++对象模型"></a>C++对象模型</h3><p>在C++对象模型中</p>
+<ul>
+<li><p>非静态数据成员：被放置在每一个class object（对象）之内；</p>
+</li>
+<li><p>静态数据成员：被存放在所以class object （对象）之外；</p>
+</li>
+<li><p>静态、非静态函数：都被放在所有 class object 之外；（<em>解答了第一章第一个疑问点</em>）</p>
+</li>
+<li><p>虚函数：</p>
+<p> 1、每一个 class 产生出一堆指向 virtual functions 的指针，放在表格之中，这个表格被称为 <strong>virtual table(vtbl)</strong>.  </p>
+<p>2、<strong>每一个 class object被添加一个指针，指向相关的virtual table 。通常这个指针被称为 vptr ，vptr的设定和重置都由每一个 class 的 constructor 、destructor 和 copy assignment 运算符自动完成。</strong></p>
+</li>
+</ul>
+<p><img src="F:\Blog\picture\深度探索C++\1-3.png" alt="图1-3"></p>
+<h3 id="加上继承后的C-对象模型（3-4节有讨论）"><a href="#加上继承后的C-对象模型（3-4节有讨论）" class="headerlink" title="加上继承后的C++对象模型（3.4节有讨论）"></a>加上继承后的C++对象模型（3.4节有讨论）</h3><p>作者有几种想法，其中一种是下图：</p>
+<p><img src="F:\Blog\picture\深度探索C++\1-4.png" alt></p>
+<p>​    <u>在虚拟继承的情况下</u><u>，基类（如上图ios类）不管在继承串链中被派生多少次，永远只会存在一个实例。</u></p>
+<h2 id="1-2-关键词所带来的差异"><a href="#1-2-关键词所带来的差异" class="headerlink" title="1.2 关键词所带来的差异"></a>1.2 关键词所带来的差异</h2><p>讲关于Struct与Class之间的故事。</p>
+<h2 id="1-3-对象的差异"><a href="#1-3-对象的差异" class="headerlink" title="1.3 对象的差异"></a>1.3 对象的差异</h2><h4 id="C-支持三种程序设计范式："><a href="#C-支持三种程序设计范式：" class="headerlink" title="C++支持三种程序设计范式："></a>C++支持三种程序设计范式：</h4><ul>
+<li><p>程序模型（如C语言）；</p>
+</li>
+<li><p>抽象数据类型模型（ADT）；</p>
+<p>​    使用的是一个固定而单一的类型的实例，这个实例在编译时期就完全定义好了。</p>
+</li>
+<li><p>面向对象模型（OO）（多态）；</p>
+<p>​    只有通过<strong>指针</strong>或者<strong>引用</strong>的间接处理，才支持OO程序设计所需的多态性质。因为被指定的object的真实类型在每一个特定执行点之前，是无法解析的。</p>
+</li>
+</ul>
+<h4 id="C-以下列方法支持多态："><a href="#C-以下列方法支持多态：" class="headerlink" title="C++ 以下列方法支持多态："></a>C++ 以下列方法支持多态：</h4><ol>
+<li><p>经由一组隐含的转化操作。例如<strong>把一个子类指针转换为一个指向其 public基类的指针</strong>；</p>
+<p>如：<code>shape *ps = new circle();</code></p>
+</li>
+<li><p>经由 virtual function 机制；</p>
+</li>
+<li><p>经由dynamic_cast和typied运算符；</p>
+</li>
+</ol>
+<p>​    多态的主要用途是经由<strong>一个共同的接口</strong>来影响类型的封装，这个接口通常被定义<strong>在一个抽象的基类中</strong>。这个共享接口是<strong>以虚函数机制引发</strong>的，它可以<strong>在执行期</strong>根据object的真正类型解析出到底是哪一个函数实例被调用。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">rotate</span><span class="params">(X datum, <span class="keyword">const</span> X *pointer, <span class="keyword">const</span> X &amp;reference)</span></span>&#123;</span><br><span class="line">    <span class="comment">//在执行期以前，无法确定到底调用了哪一个rotate实例</span></span><br><span class="line">    (*pointer).rotate();</span><br><span class="line">    reference.rotate();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//总是调用datum中的rotate，不管datum中的rotate是否为虚函数</span></span><br><span class="line">    datum.rotate();</span><br><span class="line">&#125;</span><br><span class="line">main()&#123;</span><br><span class="line">    Z z;	<span class="comment">//Z是X的一个子类</span></span><br><span class="line">    </span><br><span class="line">    rotate(z,&amp;z,z);	<span class="comment">//pointer和reference的函数调用会被动态完成，在这里都调用Z::rotate()</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="一个class-object-需要多少内存"><a href="#一个class-object-需要多少内存" class="headerlink" title="一个class object 需要多少内存"></a>一个class object 需要多少内存</h4><ol>
+<li>其<strong>非静态数据成员的总和</strong>大小；</li>
+<li>加上任何由于<strong>边界调整</strong>的需求而填补上去的空间，可能存在于members之间，也可能存在于集合体的边界；</li>
+<li>加上为了支持 virtual 而由内部产生的任何额外负担，vptr等；</li>
+</ol>
+<h4 id="指针类型"><a href="#指针类型" class="headerlink" title="指针类型"></a>指针类型</h4><p>​    一个指向ZoomAnimal的指针是如何与一个指向整数的指针不同？</p>
+<p>​    从内存上看，没有不同！一个指针，不管它指向哪一种数据类型，指针本身所需的内存大小是固定的。</p>
+<p>​    <strong>而是，“指针类型”会指导编译器如何解析某个特定地址中的内存内容及其大小。</strong></p>
+<h4 id="加上多态以后的指针类型"><a href="#加上多态以后的指针类型" class="headerlink" title="加上多态以后的指针类型"></a>加上多态以后的指针类型</h4><p>​    假设Bear object放在地址1000处，一个Bear指针和一个ZoomAnimal有什么不同？</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Bear b;</span><br><span class="line">ZoomAnimal *pz = &amp;b;</span><br><span class="line">Bear *pb = &amp;b;</span><br></pre></td></tr></table></figure>
+<p>​    如图（图中两个指针都是Bear，但可假设其中一个为ZoomAnimal）：</p>
+<p><img src="F:\Blog\picture\深度探索C++\1-5.png" alt></p>
+<p>​    它们每一个都指向Bear object的第一个byte。其间的差别是，<strong>pb所涵盖的地址包含整个Bear object，而pz所涵盖的地址只包含Bear object中的ZoomAnimal subobject。</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Bear b;</span><br><span class="line">ZoomAnimal za = b;		<span class="comment">//这个引起切割</span></span><br></pre></td></tr></table></figure>
+<p>​    当一个基类对象被初始化为一个子类对象，那么子类对象就会被切割以塞入较小的base type内存中，多态于是不再呈现。</p>
+<p>​    </p>
 
       
 
@@ -217,6 +285,17 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">深入探索C++对象模型-学习总结</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -267,7 +346,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2019/03/09/hello-world/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2019/03/18/深入探索C-对象模型-第一章/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -281,15 +360,11 @@
   
 <nav id="article-nav">
   
-    <a href="/2019/03/09/搭建Hexo博客/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          搭建Hexo博客
-        
-      </div>
-    </a>
   
+    <a href="/2019/03/15/数据结构与算法-树/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">数据结构与算法-树</div>
+      <i class="icon-circle-right"></i>
+    </a>
   
 </nav>
 
@@ -421,6 +496,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">数据结构与算法</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">深入探索C++对象模型-学习总结</a>
               </li>
             
             <div class="clearfix"></div>

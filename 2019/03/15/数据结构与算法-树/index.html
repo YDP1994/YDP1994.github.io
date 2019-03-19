@@ -24,7 +24,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/3f/5f/3f59a40e3d927f567022918d89590a5f.jpg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/fb/ff/fb7b320efd59a05469d6d6fcf0c98eff.jpg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/25/17/254a4800703d31612c0af63870260517.jpg">
-<meta property="og:updated_time" content="2019-03-15T13:34:32.219Z">
+<meta property="og:updated_time" content="2019-03-16T13:41:52.825Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="数据结构与算法-树">
 <meta name="twitter:description" content="二叉树二叉树的前序遍历、中序遍历、后序遍历。  代码实现： 1234567891011121314151617181920void preOrder(Node* root) &amp;#123;  if (root == null) return;  print root // 此处为伪代码，表示打印 root 节点  preOrder(root-&amp;gt;left);  preOrder(root-&amp;gt">
@@ -231,6 +231,8 @@
 <h4 id="6-二叉查找树的时间复杂度"><a href="#6-二叉查找树的时间复杂度" class="headerlink" title="6.二叉查找树的时间复杂度"></a>6.二叉查找树的时间复杂度</h4><p>不稳定。</p>
 <p>最坏变成链表，查找变为O(n)；</p>
 <p>最好是完全二叉树，查找、删除、插入都为O(height)；</p>
+<h1 id="3-红黑树"><a href="#3-红黑树" class="headerlink" title="3.红黑树"></a>3.红黑树</h1><p>红黑树是一种平衡二叉查找树。它是为了解决普通二叉查找树再说数据更新的过程中，复杂度退化的问题而产生的。红黑树的<strong>高度近似log n</strong>，所以他是近似平衡的，<strong>插入、删除、查找操作的时间复杂度都是O(log n)</strong>。</p>
+<p>因为红黑树是一种性能非常稳定的二叉查找树，所以在工程中，但凡是用到动态插入、删除、查找数据的场景，都可以用到它。但如果没有现成的代码可以支持，那么我们更倾向用跳表来实现。</p>
 
       
 
@@ -339,6 +341,15 @@
 
   
 <nav id="article-nav">
+  
+    <a href="/2019/03/18/深入探索C-对象模型-第一章/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          深入探索C++对象模型-第一章
+        
+      </div>
+    </a>
   
   
     <a href="/2019/03/15/常用算法的时间复杂度/" id="article-nav-older" class="article-nav-link-wrap">
@@ -476,6 +487,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">数据结构与算法</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">深入探索C++对象模型-学习总结</a>
               </li>
             
             <div class="clearfix"></div>
