@@ -6,15 +6,22 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Tag: 深入探索C++对象模型-学习总结 | CodeYuan</title>
+  <title>深度探索C++对象模型-第三章 | CodeYuan</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="CodeYuan">
-<meta property="og:url" content="http://yoursite.com/tags/深入探索C-对象模型-学习总结/index.html">
+  <meta name="description" content="说明： ​    不是很清楚的点，用下划线。 ​    解答，用斜体； ​    重点，用粗体加粗； 第二章 Data 语意学3.2 Data Member 的布局非静态成员变量在class object中的排列顺序将和其声明的顺序一样的。但C++ standard允许编译器将多个access sections之中的data members自由排列，不必在乎他们的出现在class中的声明顺序。 3">
+<meta name="keywords" content="深入探索C++对象模型-学习总结">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深度探索C++对象模型-第三章">
+<meta property="og:url" content="http://yoursite.com/2019/03/19/深度探索C-对象模型-第三章/index.html">
 <meta property="og:site_name" content="CodeYuan">
+<meta property="og:description" content="说明： ​    不是很清楚的点，用下划线。 ​    解答，用斜体； ​    重点，用粗体加粗； 第二章 Data 语意学3.2 Data Member 的布局非静态成员变量在class object中的排列顺序将和其声明的顺序一样的。但C++ standard允许编译器将多个access sections之中的data members自由排列，不必在乎他们的出现在class中的声明顺序。 3">
 <meta property="og:locale" content="default">
+<meta property="og:image" content="http://baiy.cn/doc/cpp/image/%E9%92%BB%E7%9F%B3%E5%9E%8B%E7%BB%A7%E6%89%BF%E7%9A%84%E5%85%B8%E5%9E%8B%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80.png">
+<meta property="og:updated_time" content="2019-03-20T02:23:11.886Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="CodeYuan">
+<meta name="twitter:title" content="深度探索C++对象模型-第三章">
+<meta name="twitter:description" content="说明： ​    不是很清楚的点，用下划线。 ​    解答，用斜体； ​    重点，用粗体加粗； 第二章 Data 语意学3.2 Data Member 的布局非静态成员变量在class object中的排列顺序将和其声明的顺序一样的。但C++ standard允许编译器将多个access sections之中的data members自由排列，不必在乎他们的出现在class中的声明顺序。 3">
+<meta name="twitter:image" content="http://baiy.cn/doc/cpp/image/%E9%92%BB%E7%9F%B3%E5%9E%8B%E7%BB%A7%E6%89%BF%E7%9A%84%E5%85%B8%E5%9E%8B%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80.png">
   
     <link rel="alternative" href="/atom.xml" title="CodeYuan" type="application/atom+xml">
   
@@ -150,36 +157,93 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
+            <article id="post-深度探索C-对象模型-第三章" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
   
+    <h1 class="article-title" itemprop="name">
+      深度探索C++对象模型-第三章
+    </h1>
   
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2019" class="archive-year">2019</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/03/19/深度探索C-对象模型-第三章/" class="archive-article-date">
+
+        
+        <a href="/2019/03/19/深度探索C-对象模型-第三章/" class="archive-article-date">
   	<time datetime="2019-03-19T11:13:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-19</time>
 </a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/03/19/深度探索C-对象模型-第三章/">深度探索C++对象模型-第三章</a>
-    </h1>
-  
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>说明：</p>
+<p>​    <u>不是很清楚的点</u>，用下划线。</p>
+<p>​    <em>解答</em>，用斜体；</p>
+<p>​    <strong>重点</strong>，用粗体加粗；</p>
+<h1 id="第二章-Data-语意学"><a href="#第二章-Data-语意学" class="headerlink" title="第二章 Data 语意学"></a>第二章 Data 语意学</h1><h2 id="3-2-Data-Member-的布局"><a href="#3-2-Data-Member-的布局" class="headerlink" title="3.2 Data Member 的布局"></a>3.2 Data Member 的布局</h2><p>非静态成员变量在class object中的排列顺序将和其声明的顺序一样的。但C++ standard允许编译器将多个access sections之中的data members自由排列，不必在乎他们的出现在class中的声明顺序。</p>
+<h2 id="3-3-Data-Member-的存取"><a href="#3-3-Data-Member-的存取" class="headerlink" title="3.3 Data Member 的存取"></a>3.3 Data Member 的存取</h2><h3 id="存取代价："><a href="#存取代价：" class="headerlink" title="存取代价："></a>存取代价：</h3><p>每一个member 的存取许可（private public protected），以及与class的关联，并不会导致任何空间上或执行时间上的额外负担——不论是在个别的class objects 或是在static data member 本身。</p>
+<h3 id="static-data-members："><a href="#static-data-members：" class="headerlink" title="static data members："></a>static data members：</h3><p><strong>静态数据成员（static data members） 被视为global变量，只有一个实体，存放在程序的data segment（数据段）之中</strong>，每次取static member 就会被内部转化为对该唯一的extern 实体的直接参考操作。若取一个static data member的地址，会得到一个数据类型的指针，而不是只想起class member的指针。</p>
+<h3 id="nonstatic-data-members："><a href="#nonstatic-data-members：" class="headerlink" title="nonstatic data members："></a>nonstatic data members：</h3><p>只要程序猿在一个成员函数中直接处理一个非静态成员变量，“隐式类对象（<strong>this指针</strong>）”就会出现。</p>
+<p>欲对一个nonstatic data member 进行存取操作，编译器需要把this指针（class object的起始地址）加上data member的偏移量。</p>
+<p>非静态成员变量的<strong>偏移量在编译时期</strong>就可以获知，即使这个成员变量是属于被派生的类。因此存取效率高。</p>
+<h2 id="3-4-继承-与-Data-Member"><a href="#3-4-继承-与-Data-Member" class="headerlink" title="3.4 继承 与 Data Member"></a>3.4 继承 与 Data Member</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Point2d</span>&#123;</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    	<span class="comment">//....</span></span><br><span class="line">    <span class="keyword">private</span>:</span><br><span class="line">    	<span class="keyword">float</span> x,y;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Point3d</span>&#123;</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    	<span class="comment">//....</span></span><br><span class="line">    <span class="keyword">private</span>:</span><br><span class="line">    	<span class="keyword">float</span> x,y,z;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>讨论上述结构，与 “提供继承结构” 有什么不同？</p>
+<p>下面分四种情况讨论。</p>
+<h3 id="1-只要继承不要多态"><a href="#1-只要继承不要多态" class="headerlink" title="1.只要继承不要多态"></a>1.只要继承不要多态</h3><p><strong>具体继承（相对于虚拟继承）并不会增加空间或存储时间上的额外负担。</strong>这种情况base class和derived class的objects都是从相同的地址开始，其差异只在于derived object 比较大，用以容纳自建的静态数据成员，<strong>把一个derived class object指定给base class 的指针或引用</strong>（一定要通过指针或引用），并不需要编译器去调停或修改地址，提供了最佳执行效率。</p>
+<h3 id="2-加上多态"><a href="#2-加上多态" class="headerlink" title="2.加上多态"></a>2.加上多态</h3><p>即在继承关系中，提供一个<strong>虚函数</strong>接口。</p>
+<p>多态带来了程序弹性，但这种弹性会带来空间和存取时间的额外负担：</p>
+<ol>
+<li>导入一个虚函数表 ，用来存储它所声明的每一个virtual functions的地址。</li>
+<li>在每一个class object中导入一个vptr，提供执行期的链接，使每一个object能够找到相应的virtual table。</li>
+<li>加强constructor，使它能够为vptr设定初始值，让它指向class 所对应的virtual table 。</li>
+<li>加强destructor，使它能够消抹“指向class 相关virtual table”的vptr。</li>
+<li></li>
+</ol>
+<h3 id="3-多重继承"><a href="#3-多重继承" class="headerlink" title="3.多重继承"></a>3.多重继承</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">point2d</span>&#123;</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    	<span class="comment">//....</span></span><br><span class="line">    <span class="keyword">protected</span>:</span><br><span class="line">    	<span class="keyword">float</span> x,y;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Vertex</span>&#123;</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    	<span class="comment">//....</span></span><br><span class="line">    <span class="keyword">protected</span>:</span><br><span class="line">    	Vertex *next;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Vertex3d</span>:</span> <span class="keyword">public</span> point2d, <span class="keyword">public</span> Vertex&#123; </span><br><span class="line">    <span class="comment">//point2d是第一个base class，Vertex是第二个</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    	<span class="comment">//....</span></span><br><span class="line">    <span class="keyword">protected</span>:</span><br><span class="line">    	<span class="keyword">float</span> mumble;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于一个多重派生对象，将其地址指定给“最左端（第一个）base class的指针”，情况和单一继承时相同，因为二者都指向了相同的起始地址；至于第二个或后面的base class 的地址指定操作，则需要将地址修改过：加上（<u>或减去，如果是downcast</u>）介于中间的base class subobject(s)的大小。</p>
+<p>如果要存取第二个（或后面）的base class 中的一个data member ，会增加额外的成本吗？<strong>不需要付出额外的成本</strong>，因为members的位置<strong>在编译时期就固定</strong>了，因此存取member只是一个简单的offset的运算。</p>
+<h3 id="4-虚拟继承"><a href="#4-虚拟继承" class="headerlink" title="4.虚拟继承"></a>4.虚拟继承</h3><p>这一部分比较难，并且各个编译器实现方式不同。</p>
+<p>class如果含有一个或多个 virtual base class subobjects 将被分割为两部分：一个不变区域和一个共享区域。</p>
+<ul>
+<li>不变区域中的数据，不管后继如何衍化，总是能有固定的offset，这部分可以被直接存取；</li>
+<li>至于共享区域，所表现的就是virtual base class subobject ，这个部分数据，其位置因为每次派生操作而有变化，所以只能间接存取。</li>
+</ul>
+<h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p><img src="http://baiy.cn/doc/cpp/image/%E9%92%BB%E7%9F%B3%E5%9E%8B%E7%BB%A7%E6%89%BF%E7%9A%84%E5%85%B8%E5%9E%8B%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80.png" alt="虚拟继承内存布局"></p>
 
-        <div class="article-info info-on-right">
-          
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢支持<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/picture/wechatpay.png">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -191,95 +255,106 @@
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2019/03/19/深度探索C-对象模型-第三章/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/03/19/深度探索C-对象模型-第二章/" class="archive-article-date">
-  	<time datetime="2019-03-19T01:15:23.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-19</time>
-</a>
+<nav id="article-nav">
+  
+  
+    <a href="/2019/03/19/深度探索C-对象模型-第二章/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">深度探索C++对象模型-第二章</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
+        
+        
+    </div>
+</aside>
+
+
+
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/03/19/深度探索C-对象模型-第二章/">深度探索C++对象模型-第二章</a>
-    </h1>
+  
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">深入探索C++对象模型-学习总结</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2019/03/18/深入探索C-对象模型-第一章/" class="archive-article-date">
-  	<time datetime="2019-03-18T12:29:46.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-18</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2019/03/18/深入探索C-对象模型-第一章/">深入探索C++对象模型-第一章</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">深入探索C++对象模型-学习总结</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
   
 
-    
+  
 
 
           </div>
@@ -309,9 +384,9 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,
