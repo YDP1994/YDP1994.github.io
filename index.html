@@ -152,6 +152,391 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-Linux嵌入式笔记" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="IO操作"><a href="#IO操作" class="headerlink" title="IO操作"></a>IO操作</h1><h2 id="文件IO操作函数"><a href="#文件IO操作函数" class="headerlink" title="文件IO操作函数"></a>文件IO操作函数</h2><p><strong>1.write(int fd, void *buf, size_t count)</strong></p>
+<ul>
+<li><p>写成功后，fd会调整；</p>
+</li>
+<li><p>若fd参数为1，则直接显示到屏幕；</p>
+</li>
+</ul>
+<p><strong>2.read(int fd, void * buf, size_t count)</strong></p>
+<ul>
+<li>注意需要调整fd指针</li>
+</ul>
+<p><strong>3.lseek(int fd, off_t offset, int whence)</strong></p>
+<ul>
+<li><p>第二个参数：偏移量，每一读写操作所需要移动的距离，单位是字节的数量，可正可负（向前移、向后移）</p>
+</li>
+<li><p>第三个参数：当前位置的基点</p>
+<ol>
+<li><p>SEEK_SET：当前位置为文件的揩油，新位置为偏移量的大小；</p>
+</li>
+<li><p>SEEK_CUR：当前为文件指针的位置，新位置为当前位置加上偏移量；</p>
+</li>
+<li><p>SEEK_END：当前位置为文件的结尾，新位置为文件的大小加上偏移量的大小</p>
+</li>
+</ol>
+</li>
+<li><p>返回值：当前文件的位置指针值</p>
+</li>
+</ul>
+<h2 id="标准IO操作函数"><a href="#标准IO操作函数" class="headerlink" title="标准IO操作函数"></a>标准IO操作函数</h2><p>三个缓存，从上至下，从外到内：</p>
+<ul>
+<li>用户缓存；如自己定义的buf[]</li>
+<li>库缓存；如printf()，遇到<u>/n</u>，或者<u>写满</u>时，才会写到内核缓存中。</li>
+<li>内核缓存；每打开一个文件，就有一个库缓存</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>文件IO</th>
+<th>标准IO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>open</td>
+<td>fopen</td>
+</tr>
+<tr>
+<td>close</td>
+<td>fclose</td>
+</tr>
+<tr>
+<td>lseek</td>
+<td>fseek,rewind</td>
+</tr>
+<tr>
+<td>read</td>
+<td>读写函数比较多（分为全缓存、行缓存、无缓存）</td>
+</tr>
+<tr>
+<td>write</td>
+</tr>
+</tbody>
+</table>
+<p><strong>三类读写函数：</strong></p>
+<p>第一类：行缓存，遇到换行符（\n）或写满缓存即调用系统调用函数</p>
+<ul>
+<li>读：fgets，gets，printf，fprintf，sprintf</li>
+<li>写：fputs，puts，scanf</li>
+</ul>
+<p>第二类：无缓存，只要用户调用这个函数，就会将其内容写到内核中</p>
+<p>第三类：全缓存，只要写满缓存再调用系统调用函数</p>
+<ul>
+<li>读：fread</li>
+<li>写：fwrite</li>
+</ul>
+<p><strong>1.FILE <em>fopen(const char </em>path, const char *mode)</strong></p>
+<ul>
+<li>返回值：文件流指针 FILE*<ol>
+<li>标准输入流：stdin 0</li>
+<li>标准输出流：stdout 1</li>
+<li>标准出错流：stderr 2</li>
+</ol>
+</li>
+<li>mode：读写模式</li>
+<li>可以创建一个文件</li>
+</ul>
+<p><strong>2.char <em>fgets(char </em>s, int size, FILE *stream)</strong></p>
+<ul>
+<li>第一个参数：缓存，读到哪</li>
+<li>第二个参数：赌多少个字节</li>
+<li>第三个参数：从什么地方读，可以从标准输入读，也可以从文件读</li>
+<li>返回值：成功为s（缓存地址），若到了文件尾端或出错为NULL</li>
+<li>fgets函数，会把回车也捕获；而gets函数不会，但gets有bug，所以用fgets</li>
+</ul>
+<p><strong>3.int fputs(const char <em>s, FILE </em>stream)</strong></p>
+<ul>
+<li>第一个参数：缓存，写什么内容</li>
+<li>第二个参数：写到哪，可以写到屏幕也可以写到文件</li>
+<li>返回值：成功则非负值，出错则为EOF（-1）</li>
+</ul>
+<p><strong>4.fflush(FILE *fp)</strong></p>
+<ul>
+<li>会强制把用户缓存写到内核中，不需要等到/n或者写满</li>
+<li>fclose(FILE *fp)里包含fflush</li>
+</ul>
+<p><strong>5.fseek(FILE *fd, off_t offset, int whence)</strong></p>
+<ul>
+<li>第二个参数：偏移量，每一读写操作所需要移动的距离，单位是字节的数量，可正可负（向前移、向后移）</li>
+<li>第三个参数：当前位置的基点<ol>
+<li>SEEK_SET：当前位置为文件的开头，新位置为偏移量的大小；</li>
+<li>SEEK_CUR：当前为文件指针的位置，新位置为当前位置加上偏移量；</li>
+<li>SEEK_END：当前位置为文件的结尾，新位置为文件的大小加上偏移量的大小</li>
+</ol>
+</li>
+<li>返回值：成功返回0，失败返回-1；</li>
+</ul>
+<p><strong>6.rewind(FILE *fd)</strong></p>
+<ul>
+<li>功能等价于（void）fseek(fp,0,SEEK_SET)；回到文件开头处，较常用</li>
+</ul>
+<p><strong>7.fprintf、printf、sprintf</strong></p>
+<ul>
+<li><p>int fprintf(FILE *stream,“字符串格式”)</p>
+<ol>
+<li><p>fprintf可以输出到文件中，也可以输出到显示器stdout</p>
+</li>
+<li><p>printf只能输出到显示器中</p>
+</li>
+</ol>
+</li>
+<li><p>int sprintf(str *,“字符串格式”)，输出内容到一个字符串中</p>
+</li>
+</ul>
+<p><strong>8.一个字符读写函数fgetc和fputc</strong></p>
+<ul>
+<li>int fgetc(FILE *fp)<ol>
+<li>返回值：正确为读取的字符，出错为EOF</li>
+</ol>
+</li>
+<li>int fputc(int c,FILE *fp)<ol>
+<li>返回值：正确为输出的字符，出错为EOF</li>
+<li>有缓存，但不是行缓存，可以用fflush刷新输出。</li>
+</ol>
+</li>
+</ul>
+<p><strong>9.判断EOF返回值是读写到了尾端还是读写出错？feof、ferror、clearerr</strong></p>
+<ul>
+<li>int feof(FILE *stream)<ol>
+<li>判断是否结束</li>
+<li>返回值：文件结束，返回非0，未结束返回0</li>
+</ol>
+</li>
+<li>int ferror(FILE *stream)<ol>
+<li>判断是否读写出错</li>
+<li>返回值：文件出错，返回非0，未出错返回0</li>
+</ol>
+</li>
+<li>void clearerr(FILE *stream)<ol>
+<li>清除流错误</li>
+</ol>
+</li>
+</ul>
+<p><strong>10.全缓存两个函数：fread和fwrite</strong></p>
+<p>size_t fread(void <em>prt, size_t size, size_t nmemb, FILE </em>stream)</p>
+<p>size_t fwrite(const void <em>prt, size_t size, size_t nmemb, FILE </em>stream)</p>
+<p>功能：全缓存的读写函数</p>
+<ul>
+<li>第一个参数：buf，写的内容</li>
+<li>第二个参数：size，写的内容中，每一个单元所占的字节数</li>
+<li>第三个参数：nmemb，一共有多少个单元数</li>
+<li>第四个参数：stream，写到哪里去</li>
+<li>一共写多少个字节，size*nmemb。就像malloc中要指定大小一样</li>
+<li>返回值：实际读写的单元数</li>
+</ul>
+<h2 id="目录IO操作函数"><a href="#目录IO操作函数" class="headerlink" title="目录IO操作函数"></a>目录IO操作函数</h2><p>需要包含dirent.h头文件</p>
+<p><strong>1.DIR <em>opendir(const char </em>pathname)</strong></p>
+<ul>
+<li>参数：打开的目录以及路径</li>
+<li>返回值：成功返回目录流指针，出错返回NULL</li>
+</ul>
+<p><strong>2.int close(DIR *dr)</strong></p>
+<p><strong>3.int mkdir(const char *path, mode_t mode)</strong></p>
+<ul>
+<li>mode：为该目录的访问权限（权限都与umask有关）</li>
+<li>返回值：创建成功返回0，否则返回-1</li>
+</ul>
+<p><strong>4.struct dirent <em>readdir(DIR </em>dr)</strong></p>
+<ul>
+<li>参数：目录流指针</li>
+<li>返回值：dirent结构体，其中主要有两个成员inode号（文件识别号）与文件名</li>
+<li>这一次只读一个文件或目录，如果想要全部读取出来，需要循环去读</li>
+</ul>
+<p><strong>5.void rewinddir(DIR *dr)</strong></p>
+<p>重新调整指针到开头，与rewind一样，不多解释</p>
+<p><strong>6.long telldir(DIR *dr)</strong></p>
+<p>告诉当前流指针的位置</p>
+<p><strong>6.long seekdir(DIR *dr)</strong></p>
+<p>也是调整指针到任意位置。与rewind一样，不多解释</p>
+<h2 id="linux下静态库和动态库（共享库）的制作与使用"><a href="#linux下静态库和动态库（共享库）的制作与使用" class="headerlink" title="linux下静态库和动态库（共享库）的制作与使用"></a>linux下静态库和动态库（共享库）的制作与使用</h2><p>Linux操作系统支持的函数库分为：</p>
+<ul>
+<li><p>静态库，libxxx.a，在编译时就将库编译进可执行程序中。</p>
+<ol>
+<li><p>优点：程序的运行环境不需要外部函数库</p>
+</li>
+<li><p>缺点：可执行程序大</p>
+</li>
+</ol>
+</li>
+<li><p>动态库，又称共享库，libxxx.so，在运行时将库加载到可执行程序中。</p>
+<ol>
+<li><p>优点：可执行程序小</p>
+</li>
+<li><p>缺点：程序的运行环境需要相应的函数库</p>
+</li>
+</ol>
+</li>
+</ul>
+<p><strong>1.静态库的制作</strong></p>
+<ul>
+<li>生成目标文件（.o文件）：gcc -c file.c</li>
+<li>静态函数库创建命令ar：ar -cr libfile.a file.o<ol>
+<li>-c：create</li>
+<li>-r：replace，已存在，则覆盖</li>
+</ol>
+</li>
+</ul>
+<p><strong>2.静态库的编译</strong></p>
+<p>输入gcc  -o  main  mian.c  -L.  -lfile  </p>
+<p>这样main.c就会把静态函数库整合进main中。</p>
+<p>-L：制定了静态函数库的位置供查找，L后面还有“.”，表示在当前目录下查找</p>
+<p>-l：指定了静态函数库名，省略了lib和.a</p>
+<p><strong>3.静态库的操作</strong></p>
+<p>如果从别处得到一个静态库libunknown.a，想知道其中包含哪些模块。</p>
+<p>命令：ar -t  libunknown.a</p>
+<p><strong>1.动态库的制作</strong></p>
+<ul>
+<li>生成目标文件（.o文件）：gcc -c file.c</li>
+<li>动态函数库创建命令：gcc  -shared  -fpic  -o libfile.so  file.o<ol>
+<li>-fpic：产生位置无关代码</li>
+<li>-shared：生成共享库</li>
+</ol>
+</li>
+</ul>
+<p><strong>2.动态库的编译</strong></p>
+<p>输入gcc  -o  out  mian.c  -L.  -lfile  </p>
+<p>这样main.c就会把动态函数库绑定进main中。</p>
+<p>【注意】此时动态函数库在使用时，会查找/usr/lib    /lib目录下的动态函数库，此时是不在里面的。</p>
+<ul>
+<li><p>第一种添加方法：.so文件放到/usr/lib    /lib目录下</p>
+</li>
+<li><p>第二种添加方法：在/etc/ld.so.conf文件里加入我们生成的库的目录，然后                           ldconfig  /etc/ld.so.conf去执行修改</p>
+<p>​        在/etc/ld.so.conf是一个非常重要的一个目录，里面存放的是链接器和加载器搜索共享库时要检查的目录，默认是从/usr/lib    /lib中读取的，所以想要顺利运行，可以把我们库的目录加入这个文件中并执行/sbin/ldconfig</p>
+</li>
+</ul>
+<p><strong>3.动态库的操作</strong></p>
+<p>如果从别处得到一个静态库libunknown.a，想知道其中包含哪些模块。</p>
+<p>命令：ar -t  libunknown.a</p>
+<h1 id="进程通信"><a href="#进程通信" class="headerlink" title="进程通信"></a>进程通信</h1><p>1.什么是进程间通信</p>
+<p><strong>进程通信：在用户空间实现进程通信是不可能的，需要通过linux内核通信</strong></p>
+<p><strong>线程间通信：在用户空间就可以实现，可以通过全局变量通信</strong></p>
+<p>进程通信：fork()；子进程对父进程进行拷贝，包括pipe的文件描述符</p>
+<p>线程间通信：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_create</span><span class="params">(<span class="keyword">pthread_t</span> *tidp, <span class="keyword">const</span> <span class="keyword">pthread_attr_t</span> *attr, (<span class="keyword">void</span>*)(*start_rtn)(<span class="keyword">void</span>*), <span class="keyword">void</span> *arg)</span></span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>第一个参数为指向线程<a href="https://baike.baidu.com/item/%E6%A0%87%E8%AF%86%E7%AC%A6" target="_blank" rel="noopener">标识符</a>的<a href="https://baike.baidu.com/item/%E6%8C%87%E9%92%88" target="_blank" rel="noopener">指针</a>。</li>
+<li>第二个参数用来设置线程属性。</li>
+<li>第三个参数是线程运行函数的起始地址。</li>
+<li>最后一个参数是运行函数的参数。</li>
+</ul>
+<h2 id="有哪几种通信方式？"><a href="#有哪几种通信方式？" class="headerlink" title="有哪几种通信方式？"></a>有哪几种通信方式？</h2><p>管道通信：无名管道、有名管道（文件系统中有名）</p>
+<p>信号通信：信号通信包括：信号的发送、信号的接收、信号的处理</p>
+<p>IPC通信（内核通信）：共享内存、消息队列和信号灯</p>
+<h3 id="无名管道（文件系统中不存在这个文件节点）"><a href="#无名管道（文件系统中不存在这个文件节点）" class="headerlink" title="无名管道（文件系统中不存在这个文件节点）"></a>无名管道（文件系统中不存在这个文件节点）</h3><p>头文件unistd.h</p>
+<p>管道文件是一个<strong>特殊的文件</strong>，是由队列来实现的。</p>
+<p>在文件IO中创建一个文件或打开一个文件是由open函数来实现的，它不能创建管道文件。只能用pipe函数来创建管道</p>
+<p>函数形式：int pipe(int fd[2])</p>
+<ul>
+<li>功能：创建管道，为系统调用：</li>
+<li>参数：两个文件描述符，读端fd[0]，写端fd[1]</li>
+<li>返回值：成功0，失败-1</li>
+</ul>
+<p>【注意】</p>
+<ol>
+<li>管道是创建在内存中的，进程结束，空间释放，管道就不存在了</li>
+<li>管道中的东西，读完了就删除了</li>
+<li>如果管道中没有东西可读，则会阻塞。满了写，也会阻塞。进入睡眠状态。</li>
+</ol>
+<h3 id="有名管道（文件系统中存在这个文件节点）"><a href="#有名管道（文件系统中存在这个文件节点）" class="headerlink" title="有名管道（文件系统中存在这个文件节点）"></a>有名管道（文件系统中存在这个文件节点）</h3><p>管道文件，文件系统中存在这个文件节点，每一个文件节点都有一个inode号，不占用磁盘空间，而且这个一个特殊的文件类型：P管道类型。</p>
+<p><strong>1.int mkfifo(const char *filename, mode_t mode);</strong></p>
+<ul>
+<li>功能：创建管道文件的节点，没有在内核中创建管道。只有通过open函数打开这个文件时才会在内核空间创建管道</li>
+<li>参数：管道文件文件名，权限，创建的文件权限仍然和umask有关系。。</li>
+<li>返回值：成功0，失败-1</li>
+</ul>
+<p>或者直接$mkfifo myfifo</p>
+<h2 id="信号及信号源"><a href="#信号及信号源" class="headerlink" title="信号及信号源"></a>信号及信号源</h2><p><strong>信号本质</strong></p>
+<p>信号是在软件层次上对中断机制的一种模拟，在原理上，一个进程收到一个信号与处理器收到一个中断请求可以说是一样的。信号是异步的，一个进程不必通过任何操作来等待信号的到达，事实上，进程也不知道信号到底什么时候到达。</p>
+<p>信号是进程间通信机制中唯一的异步通信机制，可以看作是异步通知，通知接收信号的进程有哪些事情发生了。信号机制经过POSIX实时扩展后，功能更加强大，除了基本通知功能外，还可以传递附加信息。</p>
+<p><strong>信号来源</strong></p>
+<p>信号事件的发生有两个来源：硬件来源(比如我们按下了键盘或者其它硬件故障)；软件来源，最常用发送信号的系统函数是kill, raise, alarm和setitimer以及sigqueue函数，软件来源还包括一些非法运算等操作。</p>
+<h2 id="信号的种类"><a href="#信号的种类" class="headerlink" title="信号的种类"></a>信号的种类</h2><p>系统支持的所有信号如下所示：</p>
+<p><img src="https://images0.cnblogs.com/blog2015/757743/201507/200958340668111.png" alt="img"></p>
+<p>进程可以屏蔽掉大多数信号，除了SIGSTOP和SIGKILL。</p>
+<h2 id="进程对信号的响应"><a href="#进程对信号的响应" class="headerlink" title="进程对信号的响应"></a>进程对信号的响应</h2><p>进程可以通过三种方式来响应一个信号：</p>
+<p>（1）忽略信号，即对信号不做任何处理，其中，有两个信号不能忽略：SIGKILL及SIGSTOP；</p>
+<p>（2）捕捉信号。定义信号处理函数，当信号发生时，执行相应的处理函数；</p>
+<p>（3）执行缺省操作，Linux对每种信号都规定了默认操作。注意，进程对实时信号的缺省反应是进程终止。</p>
+<p>Linux究竟采用上述三种方式的哪一个来响应信号，取决于传递给相应API函数的参数。</p>
+<h2 id="信号的处理"><a href="#信号的处理" class="headerlink" title="信号的处理"></a>信号的处理</h2><p>如果进程要处理某一信号，那么就要在进程中安装该信号。安装信号主要用来确定信号值及进程针对该信号值的动作之间的映射关系，即进程将要处理哪个信号；该信号被传递给进程时，将执行何种操作。</p>
+<p>Linux主要有两个函数实现信号的安装：signal()、sigaction()。其中signal()在可靠信号系统调用的基础上实现, 是库函数。它只有两个参数，不支持信号传递信息，主要是用于前32种非实时信号的安装；而sigaction()是较新的函数（由两个系统调用实现：sys_signal以及sys_rt_sigaction），有三个参数，支持信号传递信息，主要用来与 sigqueue() 系统调用配合使用，当然，sigaction()同样支持非实时信号的安装。sigaction()优于signal()主要体现在支持信号带有参数。</p>
+<h3 id="signal"><a href="#signal" class="headerlink" title="signal"></a>signal</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">typedef</span> <span class="title">void</span> <span class="params">(*<span class="keyword">sighandler_t</span>)</span><span class="params">(<span class="keyword">int</span>)</span></span>;</span><br><span class="line">　　<span class="keyword">sighandler_t</span> signal(<span class="keyword">int</span> signum, <span class="keyword">sighandler_t</span> handler));</span><br></pre></td></tr></table></figure>
+<p> 第一个参数指定信号的值，第二个参数指定针对前面信号值的处理，可以忽略该信号（参数设为SIG_IGN）；可以采用系统默认方式处理信号(参数设为SIG_DFL)；也可以自己实现处理方式(参数指定一个函数地址)。</p>
+<p>如果signal()调用成功，返回最后一次为安装信号signum而调用signal()时的handler值；失败则返回SIG_ERR。</p>
+<h3 id="sigaction"><a href="#sigaction" class="headerlink" title="sigaction"></a>sigaction</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　int sigaction(int signum,const struct sigaction *act,struct sigaction *oldact));</span><br></pre></td></tr></table></figure>
+<p>sigaction函数用于改变进程接收到特定信号后的行为。该函数的第一个参数为信号的值，可以为除SIGKILL及SIGSTOP外的任何一个特定有效的信号（为这两个信号定义自己的处理函数，将导致信号安装错误）。第二个参数是指向结构sigaction的一个实例的指针，在结构 sigaction的实例中，指定了对特定信号的处理，可以为空，进程会以缺省方式对信号处理；第三个参数oldact指向的对象用来保存原来对相应信号的处理，可指定oldact为NULL。如果把第二、第三个参数都设为NULL，那么该函数可用于检查信号的有效性。</p>
+<p>第二个参数最为重要，其中包含了对指定信号的处理、信号所传递的信息、信号处理函数执行过程中应屏蔽掉哪些函数等等。</p>
+<h2 id="信号的发送"><a href="#信号的发送" class="headerlink" title="信号的发送"></a>信号的发送</h2><p>发送信号的主要函数有：kill()、raise()、 sigqueue()、alarm()、setitimer()以及abort()。</p>
+<h3 id="kill"><a href="#kill" class="headerlink" title="kill"></a>kill</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">int</span> <span class="title">kill</span><span class="params">(<span class="keyword">pid_t</span> pid, <span class="keyword">int</span> signo)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>signo是信号值，当为0时（即空信号），实际不发送任何信号，但照常进行错误检查，因此，可用于检查目标进程是否存在，以及当前进程是否具有向目标发送信号的权限（root权限的进程可以向任何进程发送信号，非root权限的进程只能向属于同一个session或者同一个用户的进程发送信号）。</p>
+<h3 id="raise"><a href="#raise" class="headerlink" title="raise"></a>raise</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">int</span> <span class="title">raise</span><span class="params">(<span class="keyword">int</span> signo)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>向进程本身发送信号，参数为即将发送的信号值。调用成功返回 0；否则，返回 -1。</p>
+<h3 id="sigqueue"><a href="#sigqueue" class="headerlink" title="sigqueue"></a>sigqueue</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">int</span> <span class="title">sigqueue</span><span class="params">(<span class="keyword">pid_t</span> pid, <span class="keyword">int</span> signo, <span class="keyword">const</span> <span class="keyword">union</span> sigval val)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>sigqueue()与函数sigaction()配合使用，sigqueue的第一个参数是指定接收信号的进程ID，第二个参数确定即将发送的信号，第三个参数是一个联合数据结构union sigval，指定了信号传递的参数，即通常所说的4字节值。</p>
+<p>sigqueue()比kill()传递了更多的附加信息，但sigqueue()只能向一个进程发送信号，而不能发送信号给一个进程组。如果signo=0，将会执行错误检查，但实际上不发送任何信号，0值信号可用于检查pid的有效性以及当前进程是否有权限向目标进程发送信号。在调用sigqueue时，sigval_t指定的信息会拷贝到3参数信号处理函数（3参数信号处理函数指的是信号处理函数由 sigaction安装，并设定了sa_sigaction指针）的siginfo_t结构中，这样信号处理函数就可以处理这些信息了。由于 sigqueue系统调用支持发送带参数信号，所以比kill()系统调用的功能要灵活和强大得多。</p>
+<p>注：sigqueue()发送非实时信号时，第三个参数包含的信息仍然能够传递给信号处理函数； sigqueue()发送非实时信号时，仍然不支持排队，即在信号处理函数执行过程中到来的所有相同信号，都被合并为一个信号。</p>
+<h3 id="alarm"><a href="#alarm" class="headerlink" title="alarm"></a>alarm</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">unsigned</span> <span class="keyword">int</span> <span class="title">alarm</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> seconds)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>专门为SIGALRM信号而设，在指定的时间seconds秒后，将向进程本身发送SIGALRM信号，又称为闹钟时间。进程调用alarm后，任何以前的alarm()调用都将无效。如果参数seconds为零，那么进程内将不再包含任何闹钟时间。返回值，如果调用alarm()前，进程中已经设置了闹钟时间，则返回上一个闹钟时间的剩余时间，否则返回0。</p>
+<h3 id="settimer"><a href="#settimer" class="headerlink" title="settimer"></a>settimer</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　int setitimer(int which, const struct itimerval *value, struct itimerval *ovalue));</span><br></pre></td></tr></table></figure>
+<p>setitimer()比alarm功能强大，支持3种类型的定时器：</p>
+<ul>
+<li>ITIMER_REAL： 设定绝对时间；经过指定的时间后，内核将发送SIGALRM信号给本进程；</li>
+<li>ITIMER_VIRTUAL 设定程序执行时间；经过指定的时间后，内核将发送SIGVTALRM信号给本进程；</li>
+<li>ITIMER_PROF 设定进程执行以及内核因本进程而消耗的时间和，经过指定的时间后，内核将发送ITIMER_VIRTUAL信号给本进程；</li>
+</ul>
+<p>setitimer()第一个参数which指定定时器类型（上面三种之一）；第二个参数是结构itimerval的一个实例；第三个参数可不做处理。setitimer()调用成功返回0，否则返回-1。</p>
+<h3 id="abort"><a href="#abort" class="headerlink" title="abort"></a>abort</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">void</span> <span class="title">abort</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>向进程发送SIGABORT信号，默认情况下进程会异常退出，当然可定义自己的信号处理函数。即使SIGABORT被进程设置为阻塞信号，调用abort()后，SIGABORT仍然能被进程接收。该函数无返回值。</p>
+<h2 id="信号生命周期"><a href="#信号生命周期" class="headerlink" title="信号生命周期"></a>信号生命周期</h2><p>对于一个完整的信号生命周期(从信号发送到相应的处理函数执行完毕)来说，可以分为三个重要的阶段，这三个阶段由四个重要事件来刻画：信号诞生；信号在进程中注册完毕；信号在进程中的注销完毕；信号处理函数执行完毕。 </p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/03/29/Linux嵌入式笔记/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-内存池" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1392,128 +1777,6 @@
       
         <p class="article-more-link">
           <a class="article-more-a" href="/2019/03/18/深度探索C-对象模型-第一章/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-数据结构与算法-树" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/03/15/数据结构与算法-树/">数据结构与算法-树</a>
-    </h1>
-  
-
-        
-        <a href="/2019/03/15/数据结构与算法-树/" class="archive-article-date">
-  	<time datetime="2019-03-15T11:37:35.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-15</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="二叉树"><a href="#二叉树" class="headerlink" title="二叉树"></a>二叉树</h1><p>二叉树的前序遍历、中序遍历、后序遍历。</p>
-<p><img src="https://static001.geekbang.org/resource/image/ab/16/ab103822e75b5b15c615b68560cb2416.jpg" alt="img"></p>
-<p>代码实现：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">preOrder</span><span class="params">(Node* root)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (root == null) <span class="keyword">return</span>;</span><br><span class="line">  print root <span class="comment">// 此处为伪代码，表示打印 root 节点</span></span><br><span class="line">  preOrder(root-&gt;left);</span><br><span class="line">  preOrder(root-&gt;right);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">inOrder</span><span class="params">(Node* root)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (root == null) <span class="keyword">return</span>;</span><br><span class="line">  inOrder(root-&gt;left);</span><br><span class="line">  print root <span class="comment">// 此处为伪代码，表示打印 root 节点</span></span><br><span class="line">  inOrder(root-&gt;right);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">postOrder</span><span class="params">(Node* root)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (root == null) <span class="keyword">return</span>;</span><br><span class="line">  postOrder(root-&gt;left);</span><br><span class="line">  postOrder(root-&gt;right);</span><br><span class="line">  print root <span class="comment">// 此处为伪代码，表示打印 root 节点</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h1 id="二叉查找树（BST"><a href="#二叉查找树（BST" class="headerlink" title="二叉查找树（BST)"></a>二叉查找树（BST)</h1><p>二叉查找树，在树中的任意一个节点，其左子树中的<strong>每个节点的值</strong>，都要小于这个节点的值；而右子树节点的值都大于这个节点的值。</p>
-<p><img src="https://static001.geekbang.org/resource/image/f3/ae/f3bb11b6d4a18f95aa19e11f22b99bae.jpg" alt="img"></p>
-<h4 id="1-二叉查找树的查找操作"><a href="#1-二叉查找树的查找操作" class="headerlink" title="1.二叉查找树的查找操作"></a>1.二叉查找树的查找操作</h4><ol>
-<li>取根节点，如果是，返回；</li>
-<li>若比根节点小，就在左子树中递归查找；</li>
-<li>若比根节点大，就在右子树中递归查找；</li>
-</ol>
-<p><img src="https://static001.geekbang.org/resource/image/96/2a/96b3d86ed9b7c4f399e8357ceed0db2a.jpg" alt="img"></p>
-<p>代码实现：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BinarySearchTree</span> &#123;</span></span><br><span class="line">  <span class="keyword">private</span> Node* tree;</span><br><span class="line">    </span><br><span class="line">  <span class="function"><span class="keyword">public</span> Node <span class="title">find</span><span class="params">(<span class="keyword">int</span> data)</span> </span>&#123;</span><br><span class="line">    Node* p = tree;		</span><br><span class="line">    <span class="keyword">while</span> (p != null) &#123;						<span class="comment">//节点遍历到空</span></span><br><span class="line">      <span class="keyword">if</span> (data &lt; p-&gt;data) p = p-&gt;left;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> (data &gt; p-&gt;data) p = p-&gt;right;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">return</span> p;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> null;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="2-二叉查找树的插入操作"><a href="#2-二叉查找树的插入操作" class="headerlink" title="2.二叉查找树的插入操作"></a>2.二叉查找树的插入操作</h4><p>从根节点开始，依次<strong>比较</strong>要插入的数据和节点的<strong>大小关系</strong></p>
-<p>分为几种情况：</p>
-<ol>
-<li><u>插入数据<strong>比当前节点大</strong></u>（前提1），且节点<strong>右子树为空</strong>，则新数据直接当前节点的<strong>右子节点</strong>；</li>
-<li>若不为空，就再递归遍历右子树，直到遇到情况1；</li>
-<li><u>插入数据<strong>比当前节点小</strong></u>（前提2），且节点<strong>左子树为空</strong>，则新数据直接当前节点的<strong>左子节点</strong>；</li>
-<li>若不为空，就再递归遍历左子树，直到遇到情况3；</li>
-</ol>
-<p><img src="https://static001.geekbang.org/resource/image/da/c5/daa9fb557726ee6183c5b80222cfc5c5.jpg" alt="img"></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">insert</span><span class="params">(<span class="keyword">int</span> data)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (tree == null) &#123;			<span class="comment">//空树</span></span><br><span class="line">    tree = <span class="keyword">new</span> Node(data);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  Node* p = tree;</span><br><span class="line">  <span class="keyword">while</span> (p != null) &#123;</span><br><span class="line">    <span class="keyword">if</span> (data &gt; p-&gt;data) &#123;		</span><br><span class="line">      <span class="keyword">if</span> (p-&gt;right == null) &#123;			<span class="comment">//情况1</span></span><br><span class="line">       p-&gt;right = <span class="keyword">new</span> Node(data);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      p = p-&gt;right;						<span class="comment">//情况2</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123; 							<span class="comment">// data &lt; p.data</span></span><br><span class="line">      <span class="keyword">if</span> (p-&gt;left == null) &#123;			<span class="comment">//情况3</span></span><br><span class="line">        p-&gt;left = <span class="keyword">new</span> Node(data);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      p = p-&gt;left;						<span class="comment">//情况4</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="3-二叉查找树的删除操作"><a href="#3-二叉查找树的删除操作" class="headerlink" title="3.二叉查找树的删除操作"></a>3.二叉查找树的删除操作</h4><p>三种情况（<strong>都是要父节点</strong>）：</p>
-<ol>
-<li>该节点没有<strong>子节点</strong>，只需将父节点指向该节点的指针<u>置NULL</u>；</li>
-<li>该节点只有一个<strong>子节点</strong>，只需将父节点指向该节点的指针<u>指向该节点的子节点</u>；</li>
-<li>该节点有两个<strong>子节点</strong>：<strong>1.</strong>找到<u>该节点右子树中的最小节点</u> <strong>2.</strong><u>替换</u>到该待删除的节点  3.再<u>删除掉这个最小节点</u>（有右节点也不怕，用情况2）。</li>
-</ol>
-<p><img src="https://static001.geekbang.org/resource/image/29/2c/299c615bc2e00dc32225f4d9e3490e2c.jpg" alt="img"></p>
-<p>代码实现：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">delete</span><span class="params">(<span class="keyword">int</span> data)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//////////////</span></span><br><span class="line">    <span class="comment">//第一步：查找//</span></span><br><span class="line">    <span class="comment">//////////////</span></span><br><span class="line">  Node* p = tree; <span class="comment">// p 指向要删除的节点，初始化指向根节点</span></span><br><span class="line">  Node* pp = null; <span class="comment">// pp 记录的是 p 的父节点</span></span><br><span class="line">  <span class="keyword">while</span> (p != null &amp;&amp; p-&gt;data != data) &#123;</span><br><span class="line">    pp = p;</span><br><span class="line">    <span class="keyword">if</span> (data &gt; p-&gt;data) p = p-&gt;right;</span><br><span class="line">    <span class="keyword">else</span> p = p-&gt;left;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (p == null) <span class="keyword">return</span>; <span class="comment">// 没有找到</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//p永远都是要待删除的节点//</span></span><br><span class="line">	<span class="comment">//////////////////////////////</span></span><br><span class="line">    <span class="comment">//情况3：要删除的节点有两个子节点//</span></span><br><span class="line">    <span class="comment">//////////////////////////////</span></span><br><span class="line">  <span class="keyword">if</span> (p-&gt;left != null &amp;&amp; p-&gt;right != null) &#123; <span class="comment">// 查找右子树中最小节点</span></span><br><span class="line">    Node* minP = p-&gt;right;</span><br><span class="line">    Node* minPP = p; <span class="comment">// minPP 表示 minP 的父节点</span></span><br><span class="line">    <span class="keyword">while</span> (minP-&gt;left != null) &#123;</span><br><span class="line">      minPP = minP;</span><br><span class="line">      minP = minP-&gt;left;</span><br><span class="line">    &#125;</span><br><span class="line">    p-&gt;data = minP-&gt;data; <span class="comment">// 将 minP 的数据替换到 p 中</span></span><br><span class="line">    p = minP; <span class="comment">//* 下面就变成了删除 minP 了，留给下面的情况2或者情况1*//</span></span><br><span class="line">    pp = minPP;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">////////////////////////////</span></span><br><span class="line">    <span class="comment">//情况2：删除节点仅有一个子节点//</span></span><br><span class="line">    <span class="comment">////////////////////////////</span></span><br><span class="line">  Node* child; <span class="comment">// p 的子节点</span></span><br><span class="line">  <span class="keyword">if</span> (p-&gt;left != null) child = p-&gt;left;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (p-&gt;right != null) child = p-&gt;right;</span><br><span class="line">  <span class="keyword">else</span> child = null;	</span><br><span class="line">    </span><br><span class="line">	<span class="comment">//////////////////////////////</span></span><br><span class="line">    <span class="comment">//情况1：删除节点是叶子节点//</span></span><br><span class="line">    <span class="comment">//////////////////////////////</span></span><br><span class="line">  <span class="keyword">if</span> (pp == null) tree = child; <span class="comment">// 删除的是根节点</span></span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (pp-&gt;left == p) pp-&gt;left = child;</span><br><span class="line">  <span class="keyword">else</span> pp-&gt;right = child;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="4-二叉查找树的其他操作"><a href="#4-二叉查找树的其他操作" class="headerlink" title="4.二叉查找树的其他操作"></a>4.二叉查找树的其他操作</h4><p><strong>中序遍历二叉查找树，就可以输出有序的数据序列，时间复杂度是O(n)。</strong>因此，二叉查找树也叫作二叉排序树。</p>
-<h4 id="5-支持重复数据的二叉查找树"><a href="#5-支持重复数据的二叉查找树" class="headerlink" title="5.支持重复数据的二叉查找树"></a>5.支持重复数据的二叉查找树</h4><p>插入：</p>
-<p>在找插入位置时，如果碰到一个节点的值，与待插入数据的值相同，那就把这个待插入的值当做大于这个节点的值来处理。即：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if (data &gt;= p-&gt;data)</span><br></pre></td></tr></table></figure>
-<p><img src="https://static001.geekbang.org/resource/image/3f/5f/3f59a40e3d927f567022918d89590a5f.jpg" alt="img"></p>
-<p>查找：</p>
-<p>遇到相同的节点，并不停止查找，而是继续在右子树中查找，直到遇到叶子节点才停止。把所有值相同的节点都找出来。</p>
-<p><img src="https://static001.geekbang.org/resource/image/fb/ff/fb7b320efd59a05469d6d6fcf0c98eff.jpg" alt="img"></p>
-<p>删除：</p>
-<p>先查找，再用前面的方法依次删除。</p>
-<p><img src="https://static001.geekbang.org/resource/image/25/17/254a4800703d31612c0af63870260517.jpg" alt="img"></p>
-<h4 id="6-二叉查找树的时间复杂度"><a href="#6-二叉查找树的时间复杂度" class="headerlink" title="6.二叉查找树的时间复杂度"></a>6.二叉查找树的时间复杂度</h4><p>不稳定。</p>
-<p>最坏变成链表，查找变为O(n)；</p>
-<p>最好是完全二叉树，查找、删除、插入都为O(height)；</p>
-<h1 id="3-红黑树"><a href="#3-红黑树" class="headerlink" title="3.红黑树"></a>3.红黑树</h1><p>红黑树是一种平衡二叉查找树。它是为了解决普通二叉查找树再说数据更新的过程中，复杂度退化的问题而产生的。红黑树的<strong>高度近似log n</strong>，所以他是近似平衡的，<strong>插入、删除、查找操作的时间复杂度都是O(log n)</strong>。</p>
-<p>因为红黑树是一种性能非常稳定的二叉查找树，所以在工程中，但凡是用到动态插入、删除、查找数据的场景，都可以用到它。但如果没有现成的代码可以支持，那么我们更倾向用跳表来实现。</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">数据结构与算法</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2019/03/15/数据结构与算法-树/">展开全文 >></a>
         </p>
       
 
