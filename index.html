@@ -152,8 +152,498 @@
           <div id="js-content" class="content-ll">
             
   
-    <article id="post-Linux嵌入式笔记" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Linux线程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/04/01/Linux线程/">Linux线程</a>
+    </h1>
+  
+
+        
+        <a href="/2019/04/01/Linux线程/" class="archive-article-date">
+  	<time datetime="2019-04-01T13:05:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-01</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>[TOC]</p>
+<h1 id="Linux线程介绍"><a href="#Linux线程介绍" class="headerlink" title="Linux线程介绍"></a>Linux线程介绍</h1><h2 id="进程与线程"><a href="#进程与线程" class="headerlink" title="进程与线程"></a>进程与线程</h2><p>典型的UNIX/Linux进程可以看成只有一个控制线程：一个进程在同一时刻只做一件事情。有了多个控制线程后，在程序设计时可以把进程设计成在同一时刻做不止一件事，每个线程各自处理独立的任务。　　</p>
+<p>进程是程序执行时的一个实例，是担当分配系统资源（CPU时间、内存等）的基本单位。在面向线程设计的系统中，进程本身不是基本运行单位，而是线程的容器。程序本身只是指令、数据及其组织形式的描述，进程才是程序（那些指令和数据）的真正运行实例。</p>
+<p>线程是操作系统能够进行运算调度的最小单位。它被包含在进程之中，是进程中的实际运作单位。一条线程指的是进程中一个单一顺序的控制流，一个进程中可以并发多个线程，每条线程并行执行不同的任务。线程包含了表示进程内执行环境必须的信息，其中包括进程中表示线程的线程ID、一组寄存器值、栈、调度优先级和策略、信号屏蔽字、errno常量以及线程私有数据。进程的所有信息对该进程的所有线程都是共享的，包括可执行的程序文本、程序的全局内存和堆内存、栈以及文件描述符。在Unix和类Unix操作系统中线程也被称为轻量级进程（lightweight processes），但轻量级进程更多指的是内核线程（kernel thread），而把用户线程（user thread）称为线程。</p>
+<blockquote>
+<p>“进程——资源分配的最小单位，线程——程序执行的最小单位”</p>
+</blockquote>
+<p>进程有独立的地址空间，一个进程崩溃后，在保护模式下不会对其它进程产生影响，而线程只是一个进程中的不同执行路径。线程有自己的堆栈和局部变量，但线程没有单独的地址空间，一个线程死掉就等于整个进程死掉，所以多进程的程序要比多线程的程序健壮，但在进程切换时，耗费资源较大，效率要差一些。但对于一些要求同时进行并且又要共享某些变量的并发操作，只能用线程，不能用进程。</p>
+<p>从函数调用上来说，进程创建使用fork()操作；线程创建使用clone()操作。<a href="http://poincare.matf.bg.ac.rs/~ivana/courses/tos/sistemi_knjige/pomocno/unp/UNP/0131411551_ch26lev1sec1.html" target="_blank" rel="noopener">Richard Stevens大师</a>这样说过：</p>
+<ul>
+<li><code>fork</code> is expensive. Memory is copied from the parent to the child, all descriptors are duplicated in the child, and so on. Current implementations use a technique called copy-on-write, which avoids a copy of the parent’s data space to the child until the child needs its own copy. But, regardless of this optimization,<code>fork</code> is expensive.</li>
+<li>IPC is required to pass information between the parent and child after the <code>fork</code>. Passing information from the parent to the child before the <code>fork</code> is easy, since the child starts with a copy of the parent’s data space and with a copy of all the parent’s descriptors. But, returning information from the child to the parent takes more work.</li>
+</ul>
+<p>Threads help with both problems. Threads are sometimes called lightweight processes since a thread is “lighter weight” than a process. That is, thread creation can be 10–100 times faster than process creation.</p>
+<p>All threads within a process share the same global memory. This makes the sharing of information easy between the threads, but along with this simplicity comes the problem of synchronization.</p>
+<h2 id="使用线程的理由"><a href="#使用线程的理由" class="headerlink" title="使用线程的理由"></a>使用线程的理由</h2><p>（本部分摘自<a href="http://www.cnblogs.com/skynet/archive/2010/10/30/1865267.HTML" target="_blank" rel="noopener">Linux多线程编程（不限Linux）</a>）</p>
+<p>从上面我们知道了进程与线程的区别，其实这些区别也就是我们使用线程的理由。总的来说就是：进程有独立的地址空间，线程没有单独的地址空间（同一进程内的线程共享进程的地址空间）。</p>
+<p>使用多线程的<strong>理由之一</strong>是和进程相比，它是一种非常”节俭”的多任务操作方式。我们知道，在Linux系统下，启动一个新的进程必须分配给它独立的地址空间，建立众多的数据表来维护它的代码段、堆栈段和数据段，这是一种”昂贵”的多任务工作方式。而运行于一个进程中的多个线程，它们彼此之间使用相同的地址空间，共享大部分数据，启动一个线程所花费的空间远远小于启动一个进程所花费的空间，而且，线程间彼此切换所需的时间也远远小于进程间切换所需要的时间。据统计，总的说来，一个进程的开销大约是一个线程开销的30倍左右，当然，在具体的系统上，这个数据可能会有较大的区别。</p>
+<p>使用多线程的<strong>理由之二</strong>是线程间方便的通信机制。对不同进程来说，它们具有独立的数据空间，要进行数据的传递只能通过通信的方式进行，这种方式不仅费时，而且很不方便。线程则不然，由于同一进程下的线程之间共享数据空间，所以一个线程的数据可以直接为其它线程所用，这不仅快捷，而且方便。当然，数据的共享也带来其他一些问题，有的变量不能同时被两个线程所修改，有的子程序中声明为static的数据更有可能给多线程程序带来灾难性的打击，这些正是编写多线程程序时最需要注意的地方。</p>
+<p>除了以上所说的优点外，不和进程比较，多线程程序作为一种多任务、并发的工作方式，当然有以下的优点：</p>
+<ul>
+<li>提高应用程序响应。这对图形界面的程序尤其有意义，当一个操作耗时很长时，整个系统都会等待这个操作，此时程序不会响应键盘、鼠标、菜单的操作，而使用多线程技术，将耗时长的操作（time consuming）置于一个新的线程，可以避免这种尴尬的情况。</li>
+<li>使多CPU系统更加有效。操作系统会保证当线程数不大于CPU数目时，不同的线程运行于不同的CPU上。</li>
+<li>改善程序结构。一个既长又复杂的进程可以考虑分为多个线程，成为几个独立或半独立的运行部分，这样的程序会利于理解和修改。</li>
+</ul>
+<h1 id="Linux上线程开发API概要"><a href="#Linux上线程开发API概要" class="headerlink" title="Linux上线程开发API概要"></a>Linux上线程开发API概要</h1><p>多线程开发在 Linux 平台上已经有成熟的 pthread 库支持。其涉及的多线程开发的最基本概念主要包含三点：线程，互斥锁，条件。其中，线程操作又分线程的创建，退出，等待 3 种。互斥锁则包括 4 种操作，分别是创建，销毁，加锁和解锁。条件操作有 5 种操作：创建，销毁，触发，广播和等待。其他的一些线程扩展概念，如信号灯等，都可以通过上面的三个基本元素的基本操作封装出来。详细请见下表：</p>
+<p>　　<img src="https://images0.cnblogs.com/blog2015/570460/201507/041632598968698.png" alt="img"></p>
+<h2 id="与线程自身相关API"><a href="#与线程自身相关API" class="headerlink" title="与线程自身相关API"></a>与线程自身相关API</h2><p><strong>1. 线程创建</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_create</span><span class="params">(<span class="keyword">pthread_t</span> *<span class="keyword">restrict</span> tidp, <span class="keyword">const</span> <span class="keyword">pthread_attr_t</span> *<span class="keyword">restrict</span> attr, <span class="keyword">void</span> *(*start_rtn)(<span class="keyword">void</span> *), <span class="keyword">void</span> *<span class="keyword">restrict</span> arg)</span></span>;</span><br><span class="line"><span class="comment">// 返回：若成功返回0，否则返回错误编号</span></span><br></pre></td></tr></table></figure>
+<p>当<a href="http://man7.org/linux/man-pages/man3/pthread_create.3.html" target="_blank" rel="noopener">pthread_create</a>成功返回时，由tidp指向的内存单元被设置为新创建线程的线程ID。attr参数用于定制各种不同的线程属性，暂可以把它设置为NULL，以创建默认属性的线程。</p>
+<p>新创建的线程从start_rtn函数的地址开始运行，该函数只有一个无类型指针参数arg。如果需要向start_rtn函数传递的参数不止一个，那么需要把这些参数放到一个结构中，然后把这个结构的地址作为arg参数传入。</p>
+<p><strong>2. 线程退出</strong></p>
+<p>单个线程可以通过以下三种方式退出，在不终止整个进程的情况下停止它的控制流：</p>
+<p>　　1）线程只是从启动例程中返回，返回值是线程的退出码。</p>
+<p>　　2）线程可以被同一进程中的其他线程取消。</p>
+<p>　　3）线程调用pthread_exit：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_exit</span><span class="params">(<span class="keyword">void</span> *rval_ptr)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>rval_ptr是一个无类型指针，与传给启动例程的单个参数类似。进程中的其他线程可以通过调用pthread_join函数访问到这个指针。</p>
+<p><strong>3. 线程等待</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_join</span><span class="params">(<span class="keyword">pthread_t</span> thread, <span class="keyword">void</span> **rval_ptr)</span></span>;</span><br><span class="line"><span class="comment">// 返回：若成功返回0，否则返回错误编号</span></span><br></pre></td></tr></table></figure>
+<p>调用这个函数的线程将一直阻塞，直到指定的线程调用pthread_exit、从启动例程中返回或者被取消。如果例程只是从它的启动例程返回i，rval_ptr将包含返回码。如果线程被取消，由rval_ptr指定的内存单元就置为PTHREAD_CANCELED。</p>
+<p>可以通过调用pthread_join自动把线程置于分离状态，这样资源就可以恢复。如果线程已经处于分离状态，pthread_join调用就会失败，返回EINVAL。</p>
+<p>如果对线程的返回值不感兴趣，可以把rval_ptr置为NULL。在这种情况下，调用pthread_join函数将等待指定的线程终止，但并不获得线程的终止状态。</p>
+<p><strong>4. 线程脱离</strong></p>
+<p>一个线程或者是可汇合（joinable，默认值），或者是脱离的（detached）。当一个可汇合的线程终止时，它的线程ID和退出状态将留存到另一个线程对它调用pthread_join。脱离的线程却像守护进程，当它们终止时，所有相关的资源都被释放，我们不能等待它们终止。如果一个线程需要知道另一线程什么时候终止，那就最好保持第二个线程的可汇合状态。</p>
+<p>pthread_detach函数把指定的线程转变为脱离状态。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;pthread.h&gt;</span><br><span class="line">int pthread_detach(pthread_t thread);</span><br><span class="line">// 返回：若成功返回0，否则返回错误编号</span><br></pre></td></tr></table></figure>
+<p>本函数通常由想让自己脱离的线程使用，就如以下语句：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pthread_detach(pthread_self());</span><br></pre></td></tr></table></figure>
+<p><strong>5. 线程ID获取及比较</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="keyword">pthread_t</span> pthread_self(<span class="keyword">void</span>);</span><br><span class="line"><span class="comment">// 返回：调用线程的ID</span></span><br></pre></td></tr></table></figure>
+<p>对于线程ID比较，为了可移植操作，我们不能简单地把线程ID当作整数来处理，因为不同系统对线程ID的定义可能不一样。我们应该要用下边的函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_equal</span><span class="params">(<span class="keyword">pthread_t</span> tid1, <span class="keyword">pthread_t</span> tid2)</span></span>;</span><br><span class="line"><span class="comment">// 返回：若相等则返回非0值，否则返回0</span></span><br></pre></td></tr></table></figure>
+<p>对于多线程程序来说，我们往往需要对这些多线程进行同步。<strong>同步（synchronization）</strong>是指在一定的时间内只允许某一个线程访问某个资源。而在此时间内，不允许其它的线程访问该资源。我们可以通过互斥锁（mutex），条件变量（condition variable）和读写锁（reader-writer lock）来同步资源。在这里，我们暂不介绍读写锁。</p>
+<h2 id="与互斥锁相关API"><a href="#与互斥锁相关API" class="headerlink" title="与互斥锁相关API"></a>与互斥锁相关API</h2><p>互斥量（mutex）从本质上来说是一把锁，在访问共享资源前对互斥量进行加锁，在访问完成后释放互斥量上的锁。对互斥量进行加锁后，任何其他试图再次对互斥量加锁的线程将会被阻塞直到当前线程释放该互斥锁。如果释放互斥锁时有多个线程阻塞，所有在该互斥锁上的阻塞线程都会变成可运行状态，第一个变为可运行状态的线程可以对互斥量加锁，其他线程将会看到互斥锁依然被锁住，只能回去等待它重新变为可用。在这种方式下，每次只有一个线程可以向前运行。</p>
+<p>在设计时需要规定所有的线程必须遵守相同的数据访问规则。只有这样，互斥机制才能正常工作。操作系统并不会做数据访问的串行化。如果允许其中的某个线程在没有得到锁的情况下也可以访问共享资源，那么即使其它的线程在使用共享资源前都获取了锁，也还是会出现数据不一致的问题。</p>
+<p>互斥变量用pthread_mutex_t数据类型表示。在使用互斥变量前必须对它进行初始化，可以把它置为常量PTHREAD_MUTEX_INITIALIZER（只对静态分配的互斥量），也可以通过调用pthread_mutex_init函数进行初始化。如果动态地分配互斥量（例如通过调用malloc函数），那么在释放内存前需要调用pthread_mutex_destroy。</p>
+<p><strong>1. 创建及销毁互斥锁</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_mutex_init</span><span class="params">(<span class="keyword">pthread_mutex_t</span> *<span class="keyword">restrict</span> mutex, <span class="keyword">const</span> <span class="keyword">pthread_mutexattr_t</span> *<span class="keyword">restrict</span> attr)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_mutex_destroy</span><span class="params">(<span class="keyword">pthread_mutex_t</span> mutex)</span></span>;</span><br><span class="line"><span class="comment">// 返回：若成功返回0，否则返回错误编号</span></span><br></pre></td></tr></table></figure>
+<p>要用默认的属性初始化互斥量，只需把attr设置为NULL。　　</p>
+<p><strong>2. 加锁及解锁</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_mutex_lock</span><span class="params">(<span class="keyword">pthread_mutex_t</span> mutex)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_mutex_trylock</span><span class="params">(<span class="keyword">pthread_mutex_t</span> mutex)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_mutex_unlock</span><span class="params">(<span class="keyword">pthread_mutex_t</span> mutex)</span></span>;</span><br><span class="line"><span class="comment">// 返回：若成功返回0，否则返回错误编号</span></span><br></pre></td></tr></table></figure>
+<p>如果线程不希望被阻塞，它可以使用pthread_mutex_trylock尝试对互斥量进行加锁。如果调用pthread_mutex_trylock时互斥量处于未锁住状态，那么pthread_mutex_trylock将锁住互斥量，不会出现阻塞并返回0，否则pthread_mutex_trylock就会失败，不能锁住互斥量，而返回EBUSY。</p>
+<h2 id="与条件变量相关API"><a href="#与条件变量相关API" class="headerlink" title="与条件变量相关API"></a>与条件变量相关API</h2><p> 条件变量是线程另一可用的同步机制。条件变量给多个线程提供了一个会合的场所。条件变量与互斥量一起使用时，允许线程以无竞争的方式等待特定的条件发生。</p>
+<p>条件本身是由互斥量保护的。线程在改变条件状态前必须首先锁住互斥量，其他线程在获得互斥量之前不会察觉到这种改变，因为必须锁定互斥量以后才能计算条件。</p>
+<p>条件变量使用之前必须首先初始化，pthread_cond_t数据类型代表的条件变量可以用两种方式进行初始化，可以把常量PTHREAD_COND_INITIALIZER赋给静态分配的条件变量，但是如果条件变量是动态分配的，可以使用pthread_cond_destroy函数对条件变量进行去除初始化（deinitialize）。</p>
+<p><strong>1. 创建及销毁条件变量</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_cond_init</span><span class="params">(<span class="keyword">pthread_cond_t</span> *<span class="keyword">restrict</span> cond, <span class="keyword">const</span> <span class="keyword">pthread_condattr_t</span> *<span class="keyword">restrict</span> attr)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_cond_destroy</span><span class="params">(<span class="keyword">pthread_cond_t</span> cond)</span></span>;</span><br><span class="line"><span class="comment">// 返回：若成功返回0，否则返回错误编号</span></span><br></pre></td></tr></table></figure>
+<p>除非需要创建一个非默认属性的条件变量，否则pthread_cont_init函数的attr参数可以设置为NULL。</p>
+<p><strong>2. 等待</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_cond_wait</span><span class="params">(<span class="keyword">pthread_cond_t</span> *<span class="keyword">restrict</span> cond, <span class="keyword">pthread_mutex_t</span> *<span class="keyword">restrict</span> mutex)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_cond_timedwait</span><span class="params">(<span class="keyword">pthread_cond_t</span> *<span class="keyword">restrict</span> cond, <span class="keyword">pthread_mutex_t</span> *<span class="keyword">restrict</span> mutex, cond struct timespec *<span class="keyword">restrict</span> timeout)</span></span>;</span><br><span class="line"><span class="comment">// 返回：若成功返回0，否则返回错误编号</span></span><br></pre></td></tr></table></figure>
+<p>pthread_cond_wait等待条件变为真。如果在给定的时间内条件不能满足，那么会生成一个代表一个出错码的返回变量。传递给pthread_cond_wait的互斥量对条件进行保护，调用者把锁住的互斥量传给函数。函数把调用线程放到等待条件的线程列表上，然后对互斥量解锁，这两个操作都是原子操作。这样就关闭了条件检查和线程进入休眠状态等待条件改变这两个操作之间的时间通道，这样线程就不会错过条件的任何变化。pthread_cond_wait返回时，互斥量再次被锁住。</p>
+<p>pthread_cond_timedwait函数的工作方式与pthread_cond_wait函数类似，只是多了一个timeout。timeout指定了等待的时间，它是通过timespec结构指定。</p>
+<p><strong>3. 触发</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_cond_signal</span><span class="params">(<span class="keyword">pthread_cond_t</span> cond)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_cond_broadcast</span><span class="params">(<span class="keyword">pthread_cond_t</span> cond)</span></span>;</span><br><span class="line"><span class="comment">// 返回：若成功返回0，否则返回错误编号</span></span><br></pre></td></tr></table></figure>
+<p>这两个函数可以用于通知线程条件已经满足。pthread_cond_signal函数将唤醒等待该条件的某个线程，而pthread_cond_broadcast函数将唤醒等待该条件的所有进程</p>
+<p>注意一定要在改变条件状态以后再给线程发信号。</p>
+<h1 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h1><h2 id="示例1：创建一个简单的线程"><a href="#示例1：创建一个简单的线程" class="headerlink" title="示例1：创建一个简单的线程"></a>示例1：创建一个简单的线程</h2><p>下边程序中创建了一个简单的线程thread1，负责将全局变量g_Flag重置为1：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"> <span class="number">1</span> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"> <span class="number">2</span> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"> <span class="number">3</span> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"> <span class="number">4</span> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;errno.h&gt;</span></span></span><br><span class="line"> <span class="number">5</span> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"> <span class="number">6</span> </span><br><span class="line"> <span class="number">7</span> <span class="meta">#<span class="meta-keyword">define</span> unsigned int unit;</span></span><br><span class="line"> <span class="number">8</span> </span><br><span class="line"> <span class="number">9</span> <span class="keyword">int</span> g_Flag = <span class="number">0</span>;</span><br><span class="line"><span class="number">10</span> <span class="function"><span class="keyword">void</span> *<span class="title">thread1</span><span class="params">(<span class="keyword">void</span> *)</span></span>;</span><br><span class="line"><span class="number">11</span> </span><br><span class="line"><span class="number">12</span> <span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span></span></span><br><span class="line"><span class="function">13 </span>&#123;</span><br><span class="line"><span class="number">14</span>     <span class="built_in">printf</span>(<span class="string">"Enter main function.\n"</span>);</span><br><span class="line"><span class="number">15</span> </span><br><span class="line"><span class="number">16</span>     <span class="keyword">pthread_t</span> tid1;</span><br><span class="line"><span class="number">17</span>     <span class="keyword">int</span> err1 = <span class="number">0</span>;</span><br><span class="line"><span class="number">18</span> </span><br><span class="line"><span class="number">19</span>     err1 = pthread_create(&amp;tid1, <span class="literal">NULL</span>, thread1, <span class="literal">NULL</span>);</span><br><span class="line"><span class="number">20</span>     <span class="keyword">if</span>(err1 != <span class="number">0</span>)</span><br><span class="line"><span class="number">21</span>         <span class="built_in">printf</span>(<span class="string">"%s: %d\n"</span>, __func__, strerror(err1));</span><br><span class="line"><span class="number">22</span> </span><br><span class="line"><span class="number">23</span>     <span class="built_in">printf</span>(<span class="string">"This is main the thread, process ID is %u, thread ID is %u, and g_Flag is %d.\n"</span>, (uint)getpid(), (uint)pthread_self, g_Flag);</span><br><span class="line"><span class="number">24</span>     </span><br><span class="line"><span class="number">25</span>     <span class="built_in">printf</span>(<span class="string">"Leave main functiona.\n"</span>);</span><br><span class="line"><span class="number">26</span>     <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line"><span class="number">27</span> &#125;</span><br><span class="line"><span class="number">28</span> </span><br><span class="line"><span class="number">29</span> <span class="function"><span class="keyword">void</span> *<span class="title">thread1</span><span class="params">(<span class="keyword">void</span> *arg)</span></span></span><br><span class="line"><span class="function">30 </span>&#123;</span><br><span class="line"><span class="number">31</span>     <span class="built_in">printf</span>(<span class="string">"Enter thread1.\n"</span>);</span><br><span class="line"><span class="number">32</span>     <span class="built_in">printf</span>(<span class="string">"This is thread1, process ID is %u, thread ID is %u, and g_Flag is %d.\n"</span>, (uint)getpid(), (uint)pthread_self, g_Flag);</span><br><span class="line"><span class="number">33</span>     g_Flag = <span class="number">1</span>;</span><br><span class="line"><span class="number">34</span>     <span class="built_in">printf</span>(<span class="string">"This is thread1, process ID is %u, thread ID is %u, and g_Flag is %d.\n"</span>, (uint)getpid(), (uint)pthread_self, g_Flag);</span><br><span class="line"><span class="number">35</span>     <span class="built_in">printf</span>(<span class="string">"Leave thread1.\n"</span>);</span><br><span class="line"><span class="number">36</span>     pthread_exit(<span class="number">0</span>);</span><br><span class="line"><span class="number">37</span> &#125;</span><br></pre></td></tr></table></figure>
+<p>程序运行结果如下：</p>
+<p>　　<img src="https://images0.cnblogs.com/blog2015/570460/201507/041754168962014.png" alt="img"></p>
+<p>很明显，该程序的进程并没有执行线程thread1。</p>
+<p>具体原因是主线程与新线程存在竞争：主线程需要休眠，如果主线程不休眠，它就可能退出，这样在新线程有机会运行之前整个进程就已经终止了。这种行为依赖于操作系统的线程实现方法和调度方法。</p>
+<p>这个程序还有一点值得注意的，就是新线程thread1是通过调用pthread_self函数获取自己的线程ID，而不是从共享内存中读出或者从线程的启动例程（pthread_create(…)）中以参数（tid）的形式接收到。在上边的程序中，主线程把新线程ID存放在tid1中，但是新建的线程并不能安全地使用它。如果新线程在主线程调用pthread_create返回之前就运行了，那么新线程看到的是未经初始化的tid1的内容，这个内容并不是正确的线程ID。</p>
+<h2 id="示例2：改进示例1"><a href="#示例2：改进示例1" class="headerlink" title="示例2：改进示例1"></a>示例2：改进示例1</h2><p> 　　这一次，我们在示例1程序的第25、26行之间插入</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span> sleep(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+<p> 　　程序输出如下：</p>
+<p>　　<img src="https://images0.cnblogs.com/blog2015/570460/201507/042229572078254.png" alt="img"></p>
+<p>　　这一次，很明显线程1已被执行。主线程和线程1的进程ID号一样是没问题的，关键是线程号还一样（新线程中输出的线程ID是主线程的），这说明主线程跟新线程还是存在竞争。</p>
+<h2 id="示例3：改进示例2"><a href="#示例3：改进示例2" class="headerlink" title="示例3：改进示例2"></a>示例3：改进示例2</h2><p>　　示例3程序如下：</p>
+<p><a href="javascript:void(0" target="_blank" rel="noopener"><img src="https://common.cnblogs.com/images/copycode.gif" alt="复制代码"></a>;)</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"> <span class="number">1</span> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"> <span class="number">2</span> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"> <span class="number">3</span> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"> <span class="number">4</span> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;errno.h&gt;</span></span></span><br><span class="line"> <span class="number">5</span> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"> <span class="number">6</span> </span><br><span class="line"> <span class="number">7</span> <span class="meta">#<span class="meta-keyword">define</span> unsigned int unit;</span></span><br><span class="line"> <span class="number">8</span> </span><br><span class="line"> <span class="number">9</span> <span class="keyword">int</span> g_Flag = <span class="number">0</span>;</span><br><span class="line"><span class="number">10</span> <span class="function"><span class="keyword">void</span> <span class="title">printids</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *s)</span></span>;</span><br><span class="line"><span class="number">11</span> <span class="function"><span class="keyword">void</span> *<span class="title">thread1</span><span class="params">(<span class="keyword">void</span> *)</span></span>;</span><br><span class="line"><span class="number">12</span> </span><br><span class="line"><span class="number">13</span> <span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span></span></span><br><span class="line"><span class="function">14 </span>&#123;</span><br><span class="line"><span class="number">15</span>     <span class="built_in">printf</span>(<span class="string">"Enter main function.\n"</span>);</span><br><span class="line"><span class="number">16</span> </span><br><span class="line"><span class="number">17</span>     <span class="keyword">pthread_t</span> tid1;</span><br><span class="line"><span class="number">18</span>     <span class="keyword">int</span> err1 = <span class="number">0</span>;</span><br><span class="line"><span class="number">19</span> </span><br><span class="line"><span class="number">20</span>     err1 = pthread_create(&amp;tid1, <span class="literal">NULL</span>, thread1, <span class="literal">NULL</span>);</span><br><span class="line"><span class="number">21</span>     <span class="keyword">if</span>(err1 != <span class="number">0</span>)</span><br><span class="line"><span class="number">22</span>         <span class="built_in">printf</span>(<span class="string">"%s: %d\n"</span>, __func__, strerror(err1));</span><br><span class="line"><span class="number">23</span> </span><br><span class="line"><span class="number">24</span>     printids(<span class="string">"This is the main thread"</span>);    </span><br><span class="line"><span class="number">25</span>     <span class="built_in">printf</span>(<span class="string">"Leave main function.\n"</span>);</span><br><span class="line"><span class="number">26</span>     sleep(<span class="number">1</span>);</span><br><span class="line"><span class="number">27</span>     <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line"><span class="number">28</span> &#125;</span><br><span class="line"><span class="number">29</span> </span><br><span class="line"><span class="number">30</span> <span class="function"><span class="keyword">void</span> <span class="title">printids</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *s)</span></span></span><br><span class="line"><span class="function">31 </span>&#123;</span><br><span class="line"><span class="number">32</span>     <span class="keyword">pid_t</span>        pid;</span><br><span class="line"><span class="number">33</span>     <span class="keyword">pthread_t</span>    tid;</span><br><span class="line"><span class="number">34</span> </span><br><span class="line"><span class="number">35</span>     pid = getpid();</span><br><span class="line"><span class="number">36</span>     tid = pthread_self();</span><br><span class="line"><span class="number">37</span>     <span class="built_in">printf</span>(<span class="string">"%s, process ID is %u, thread ID is %u, and g_Flag is %d.\n"</span>, s, (uint)pid, (uint)tid, g_Flag);</span><br><span class="line"><span class="number">38</span> &#125;</span><br><span class="line"><span class="number">39</span> </span><br><span class="line"><span class="number">40</span> <span class="function"><span class="keyword">void</span> *<span class="title">thread1</span><span class="params">(<span class="keyword">void</span> *arg)</span></span></span><br><span class="line"><span class="function">41 </span>&#123;</span><br><span class="line"><span class="number">42</span>     <span class="built_in">printf</span>(<span class="string">"Enter thread1.\n"</span>);</span><br><span class="line"><span class="number">43</span>     printids(<span class="string">"This is thread1"</span>);</span><br><span class="line"><span class="number">44</span>     g_Flag = <span class="number">1</span>;</span><br><span class="line"><span class="number">45</span>     printids(<span class="string">"This is thread1"</span>);</span><br><span class="line"><span class="number">46</span>     <span class="built_in">printf</span>(<span class="string">"Leave thread1.\n"</span>);</span><br><span class="line"><span class="number">47</span>     pthread_exit(<span class="number">0</span>);</span><br><span class="line"><span class="number">48</span> &#125;</span><br></pre></td></tr></table></figure>
+<p> 程序输出如下：</p>
+<p>　　<img src="https://images0.cnblogs.com/blog2015/570460/201507/042241252965771.png" alt="img"></p>
+<p>这下程序就正确了。</p>
+<h2 id="示例4：比示例3更通用的方式"><a href="#示例4：比示例3更通用的方式" class="headerlink" title="示例4：比示例3更通用的方式"></a>示例4：比示例3更通用的方式</h2><p>在这里我们采用另一种比示例3更通用的方式。我们贴出与示例3程序不同的部分：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"> <span class="number">1</span> <span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span></span></span><br><span class="line"><span class="function"> 2 </span>&#123;</span><br><span class="line"> <span class="number">3</span>     <span class="built_in">printf</span>(<span class="string">"Enter main function.\n"</span>);</span><br><span class="line"> <span class="number">4</span> </span><br><span class="line"> <span class="number">5</span>     <span class="keyword">pthread_t</span> tid1;</span><br><span class="line"> <span class="number">6</span>     <span class="keyword">int</span> err1 = <span class="number">0</span>;</span><br><span class="line"> <span class="number">7</span>     <span class="keyword">void</span> *rval1;</span><br><span class="line"> <span class="number">8</span> </span><br><span class="line"> <span class="number">9</span>     err1 = pthread_create(&amp;tid1, <span class="literal">NULL</span>, thread1, <span class="literal">NULL</span>);</span><br><span class="line"><span class="number">10</span>     <span class="keyword">if</span>(err1 != <span class="number">0</span>)</span><br><span class="line"><span class="number">11</span>         <span class="built_in">printf</span>(<span class="string">"%s: %d\n"</span>, __func__, strerror(err1));</span><br><span class="line"><span class="number">12</span> </span><br><span class="line"><span class="number">13</span>     printids(<span class="string">"This is the main thread"</span>);    </span><br><span class="line"><span class="number">14</span>     </span><br><span class="line"><span class="number">15</span>     err1 = pthread_join(tid1, &amp;rval1);</span><br><span class="line"><span class="number">16</span>     <span class="keyword">if</span>(err1 != <span class="number">0</span>)</span><br><span class="line"><span class="number">17</span>         <span class="built_in">printf</span>(<span class="string">"%s: %d\n"</span>, __func__, strerror(err1));</span><br><span class="line"><span class="number">18</span>     <span class="built_in">printf</span>(<span class="string">"thread1 exit code is %d.\n"</span>, (<span class="keyword">int</span>)rval1);</span><br><span class="line"><span class="number">19</span>     </span><br><span class="line"><span class="number">20</span>     <span class="built_in">printf</span>(<span class="string">"Leave main function.\n"</span>);</span><br><span class="line"><span class="number">21</span>     <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line"><span class="number">22</span> &#125;</span><br></pre></td></tr></table></figure>
+<p> 程序输出如下：<img src="https://images0.cnblogs.com/blog2015/570460/201507/042249449079270.png" alt="img"></p>
+<p>这下程序也是正确的。不过调用这个pthread_join函数的线程将一直阻塞，直到指定的线程调用pthread_exit、从启动例程中返回或者被取消。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Linux学习总结</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/04/01/Linux线程/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Linux进程间通信2" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/04/01/Linux进程间通信2/">Linux进程间通信2</a>
+    </h1>
+  
+
+        
+        <a href="/2019/04/01/Linux进程间通信2/" class="archive-article-date">
+  	<time datetime="2019-04-01T03:31:34.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-01</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>[TOC]</p>
+<h1 id="内存模型"><a href="#内存模型" class="headerlink" title="内存模型"></a>内存模型</h1><hr>
+<p>要使用一块<strong>共享内存</strong></p>
+<ul>
+<li>进程必须首先<strong>分配</strong>它</li>
+<li>随后须要<strong>訪问这个共享内存块的每一个进程都必须将这个共享内存绑定到自己的地址空间中</strong></li>
+<li>当完毕通信之后，全部进程都将<strong>脱离共享内存</strong>，而且由一个进程<strong>释放该共享内存块</strong></li>
+</ul>
+<p>在<code>/proc/sys/kernel/</code>文件夹下，记录着共享内存的一些限制，如一个共享内存区的最大字节数<code>shmmax</code>。系统范围内最大共享内存区标识符数<code>shmmni</code>等，能够手工对其调整，但不推荐这样做。</p>
+<p><img src="http://img.blog.csdn.net/20160329144506913" alt="这里写图片描写叙述"></p>
+<p>理解 Linux 系统内存模型能够有助于解释这个绑定的过程。</p>
+<h2 id="linux系统内存模型"><a href="#linux系统内存模型" class="headerlink" title="linux系统内存模型"></a>linux系统内存模型</h2><hr>
+<p>在 Linux 系统中。每一个进程的虚拟内存是被分为很多页面的。这些内存页面中包含了实际的数据。</p>
+<p>每一个进程都会维护一个从内存地址到虚拟内存页面之间的映射关系。虽然每一个进程都有自己的内存地址，但不同的进程能够同一时候将同一个内存页面映射到自己的地址空间中。从而达到共享内存的目的。</p>
+<p>分配一个新的共享内存块会创建新的内存页面。由于全部进程都希望共享对同一块内存的訪问。仅仅应由一个进程创建一块新的共享内存。再次分配一块已经存在的内存块不会创建新的页面，而仅仅是会返回一个标识该内存块的标识符。</p>
+<p>一个进程如需使用这个共享内存块，则首先须要将它绑定到自己的地址空间中。</p>
+<p>这样会创建一个从进程本身虚拟地址到共享页面的映射关系。当对共享内存的使用结束之后，这个映射关系将被删除。</p>
+<p>当再也没有进程须要使用这个共享内存块的时候，必须有一个（且仅仅能是一个）进程负责释放这个被共享的内存页面。</p>
+<p>全部共享内存块的大小都必须是系统页面大小的整数倍。系统页面大小指的是系统中单个内存页面包括的字节数。在 Linux 系统中，内存页面大小是4KB。只是您仍然应该通过调用 getpagesize 获取这个值。</p>
+<blockquote>
+<p>共享内存的实现分为两个步骤：</p>
+<ul>
+<li>创建共享内存，使用shmget函数。</li>
+<li>映射共享内存。将这段创建的共享内存映射到详细的进程空间去，使用shmat函数。</li>
+</ul>
+</blockquote>
+<h2 id="用于共享内存的函数"><a href="#用于共享内存的函数" class="headerlink" title="用于共享内存的函数"></a>用于共享内存的函数</h2><hr>
+<p>共享内存的使用。主要有下面几个API：<code>ftok()</code>、<code>shmget()</code>、<code>shmat()</code>、<code>shmdt()</code>及<code>shmctl()</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/shm.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">shmat</span><span class="params">(<span class="keyword">int</span> shm_id, <span class="keyword">const</span> <span class="keyword">void</span> *shm_addr, <span class="keyword">int</span> shmflg)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">shmctl</span><span class="params">(<span class="keyword">int</span> shm_id, <span class="keyword">int</span> cmd, struct shmid_ds *buf)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">shmdt</span><span class="params">(<span class="keyword">const</span> <span class="keyword">void</span> *shm_addr)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">shmget</span><span class="params">(<span class="keyword">key_t</span> key, <span class="keyword">size_t</span> size, <span class="keyword">int</span> shmflg)</span></span>;</span><br></pre></td></tr></table></figure>
+<p><img src="http://img.blog.csdn.net/20160329150948757" alt="这里写图片描写叙述"></p>
+<p>与信号量相相似，通常须要在包括shm.h文件之前包括sys/types.h与sys/ipc.h这两个头文件。</p>
+<h2 id="用ftok-函数获得一个ID号"><a href="#用ftok-函数获得一个ID号" class="headerlink" title="用ftok()函数获得一个ID号"></a>用ftok()函数获得一个ID号</h2><hr>
+<p>应用说明，在IPC中，我们经经常使用用key_t的值来创建或者打开信号量，共享内存和消息队列。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">key_t</span> ftok(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">int</span> proj_id);</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>參数</th>
+<th>描写叙述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pathname</td>
+<td>一定要在系统中存在而且进程能够訪问的</td>
+</tr>
+<tr>
+<td>proj_id</td>
+<td>一个1－255之间的一个整数值，典型的值是一个ASCII值。</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>当成功运行的时候，一个key_t值将会被返回。否则－1被返回。我们能够使用strerror(errno)来确定详细的错误信息。</p>
+</blockquote>
+<p>考虑到应用系统可能在不同的主机上应用，能够直接定义一个key，而不用ftok获得：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IPCKEY 0x344378</span></span><br></pre></td></tr></table></figure>
+<h2 id="创建共享内存"><a href="#创建共享内存" class="headerlink" title="创建共享内存"></a>创建共享内存</h2><hr>
+<p>进程通过调用shmget（Shared Memory GET，获取共享内存）来分配一个共享内存块。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">shmget</span><span class="params">(<span class="keyword">key_t</span> key ,<span class="keyword">int</span> size,<span class="keyword">int</span> shmflg)</span></span></span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>參数</th>
+<th>描写叙述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>key</td>
+<td>一个用来标识共享内存块的键值</td>
+</tr>
+<tr>
+<td>size</td>
+<td>指定了所申请的内存块的大小</td>
+</tr>
+<tr>
+<td>shmflg</td>
+<td>操作共享内存的标识</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>返回值：假设成功，返回共享内存表示符，假设失败，返回-1。</p>
+</blockquote>
+<ul>
+<li>该函数的第一个參数key是一个用来标识共享内存块的键值。</li>
+</ul>
+<p>彼此无关的进程能够通过指定同一个键以获取对同一个共享内存块的訪问。</p>
+<p>不幸的是，其他程序也可能挑选了相同的特定值作为自己分配共享内存的键值。从而产生冲突。</p>
+<p>用特殊常量IPC_PRIVATE作为键值能够保证系统建立一个全新的共享内存块。IPC_PRIVATE常用于父子进程间通信。</p>
+<p>key标识共享内存的键值：0/IPC_PRIVATE。当key的取值为IPC_PRIVATE,则函数shmget将创建一块新的共享内存；假设key的取值为0。而參数中又设置了IPC_PRIVATE这个标志，则相同会创建一块新的共享内存。</p>
+<ul>
+<li>该函数的第二个參数size指定了所申请的内存块的大小。如128</li>
+</ul>
+<p>由于这些内存块是以页面为单位进行分配的。实际分配的内存块大小将被扩大到页面大小的整数倍。</p>
+<ul>
+<li>第三个參数shmflg是一组标志。通过特定常量的按位或操作来shmget。这些特定常量包括：</li>
+</ul>
+<p>IPC_CREAT：这个标志表示应创建一个新的共享内存块。通过指定这个标志，我们能够创建一个具有指定键值的新共享内存块。</p>
+<p>IPC_EXCL：这个标志仅仅能与 IPC_CREAT 同一时候使用。当指定这个标志的时候。假设已有一个具有这个键值的共享内存块存在。则shmget会调用失败。</p>
+<p>也就是说，这个标志将使线程获得一个“独有”的共享内存块。假设没有指定这个标志而系统中存在一个具有相同键值的共享内存块。shmget会返回这个已经建立的共享内存块。而不是又一次创建一个。</p>
+<p>模式标志：这个值由9个位组成，分别表示属主、属组和其他用户对该内存块的訪问权限。如0777。当中表示运行权限的位将被忽略。</p>
+<h2 id="映射共享内存"><a href="#映射共享内存" class="headerlink" title="映射共享内存"></a>映射共享内存</h2><hr>
+<p>shmat()是用来同意本进程訪问一块共享内存的函数。将这个内存区映射到本进程的虚拟地址空间。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">shmat</span><span class="params">(<span class="keyword">int</span> shmid,<span class="keyword">char</span> *shmaddr，<span class="keyword">int</span> flag)</span></span></span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>參数</th>
+<th>描写叙述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>shmid</td>
+<td>那块共享内存的ID。是shmget函数返回的共享存储标识符</td>
+</tr>
+<tr>
+<td>shmaddr</td>
+<td>是共享内存的起始地址，假设shmaddr为0，内核会把共享内存映像到调用进程的地址空间中选定位置。假设shmaddr不为0，内核会把共享内存映像到shmaddr指定的位置。所以一般把shmaddr设为0。</td>
+</tr>
+<tr>
+<td>shmflag</td>
+<td>是本进程对该内存的操作模式。假设是SHM_RDONLY的话，就是仅仅读模式。其他的是读写模式</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>成功时，这个函数返回共享内存的起始地址。失败时返回-1。</p>
+</blockquote>
+<p>要让一个进程获取对一块共享内存的訪问。这个进程必须先调用 shmat（SHared Memory Attach，绑定到共享内存）。</p>
+<p>将 shmget 返回的共享内存标识符 SHMID 传递给这个函数作为第一个參数。</p>
+<p>该函数的第二个參数是一个指针。指向您希望用于映射该共享内存块的进程内存地址；假设您指定NULL则Linux会自己主动选择一个合适的地址用于映射。</p>
+<p>第三个參数是一个标志位，包括了下面选项：</p>
+<p>SHM_RND表示第二个參数指定的地址应被向下靠拢到内存页面大小的整数倍。假设您不指定这个标志，您将不得不在调用shmat的时候手工将共享内存块的大小按页面大小对齐。<br>SHM_RDONLY表示这个内存块将仅同意读取操作而禁止写入。 假设这个函数调用成功则会返回绑定的共享内存块相应的地址。通过 fork 函数创建的子进程同一时候继承这些共享内存块；</p>
+<p>假设需要，它们能够主动脱离这些共享内存块。 当一个进程不再使用一个共享内存块的时候</p>
+<h2 id="共享内存解除映射"><a href="#共享内存解除映射" class="headerlink" title="共享内存解除映射"></a>共享内存解除映射</h2><hr>
+<p>当一个进程不再须要共享内存时，须要把它从进程地址空间中多里。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">shmdt</span><span class="params">(<span class="keyword">char</span> *shmaddr)</span></span></span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>參数</th>
+<th>描写叙述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>shmaddr</td>
+<td>那块共享内存的起始地址</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>成功时返回0。失败时返回-1。</p>
+</blockquote>
+<p>应通过调用 shmdt（Shared Memory Detach。脱离共享内存块）函数与该共享内存块脱离。</p>
+<p>将由 shmat 函数返回的地址传递给这个函数。假设当释放这个内存块的进程是最后一个使用该内存块的进程，则这个内存块将被删除。</p>
+<p>对 exit 或不论什么exec族函数的调用都会自己主动使进程脱离共享内存块。</p>
+<h2 id="控制释放"><a href="#控制释放" class="headerlink" title="控制释放"></a>控制释放</h2><hr>
+<p>shmctl控制对这块共享内存的使用</p>
+<p>函数原型</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span>  <span class="title">shmctl</span><span class="params">( <span class="keyword">int</span> shmid , <span class="keyword">int</span> cmd , struct shmid_ds *buf )</span></span>;</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>參数</th>
+<th>描写叙述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>shmid</td>
+<td>是共享内存的ID。</td>
+</tr>
+<tr>
+<td>cmd</td>
+<td>控制命令</td>
+</tr>
+<tr>
+<td>buf</td>
+<td>一个结构体指针。IPC_STAT的时候，取得的状态放在这个结构体中。假设要改变共享内存的状态，用这个结构体指定。</td>
+</tr>
+</tbody>
+</table>
+<p>当中cmd的取值例如以下</p>
+<table>
+<thead>
+<tr>
+<th>cmd</th>
+<th>描写叙述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IPC_STAT</td>
+<td>得到共享内存的状态</td>
+</tr>
+<tr>
+<td>IPC_SET</td>
+<td>改变共享内存的状态</td>
+</tr>
+<tr>
+<td>IPC_RMID</td>
+<td>删除共享内存</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>返回值： 成功：0 失败：-1</p>
+</blockquote>
+<p>调用 shmctl（”Shared Memory Control”，控制共享内存）函数会返回一个共享内存块的相关信息。同一时候 shmctl 同意程序改动这些信息。</p>
+<p>该函数的第一个參数是一个共享内存块标识。<br>要获取一个共享内存块的相关信息，则为该函数传递 IPC_STAT 作为第二个參数，同一时候传递一个指向一个 struct shmid_ds 对象的指针作为第三个參数。</p>
+<p>要删除一个共享内存块，则应将 IPC_RMID 作为第二个參数。而将 NULL 作为第三个參数。</p>
+<p>当最后一个绑定该共享内存块的进程与其脱离时，该共享内存块将被删除。</p>
+<p>您应当在结束使用每一个共享内存块的时候都使用 shmctl 进行释放，以防止超过系统所同意的共享内存块的总数限制。</p>
+<p>调用 exit 和 exec 会使进程脱离共享内存块，但不会删除这个内存块。</p>
+<p>要查看其他有关共享内存块的操作的描写叙述，请參考shmctl函数的手冊页。</p>
+<h1 id="演示样例"><a href="#演示样例" class="headerlink" title="演示样例"></a>演示样例</h1><hr>
+<h2 id="简单映射一块共享内存"><a href="#简单映射一块共享内存" class="headerlink" title="简单映射一块共享内存"></a>简单映射一块共享内存</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/ipc.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/shm.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IPCKEY 0x366378</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">st_setting</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">char</span> agen[<span class="number">10</span>];</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> file_no;</span><br><span class="line">&#125;st_setting;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span>         shm_id;</span><br><span class="line">    <span class="comment">//key_t       key;</span></span><br><span class="line">    st_setting  *p_setting;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//  首先检查共享内存是否存在，存在则先删除</span></span><br><span class="line">    shm_id = shmget(IPCKEY , <span class="number">1028</span>, <span class="number">0640</span>);</span><br><span class="line">    <span class="keyword">if</span>(shm_id != <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        p_setting = (st_setting *)shmat(shm_id, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (p_setting != (<span class="keyword">void</span> *)<span class="number">-1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            shmdt(p_setting);</span><br><span class="line"></span><br><span class="line">            shmctl(shm_id,IPC_RMID,<span class="number">0</span>) ;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//  创建共享内存</span></span><br><span class="line">    shm_id = shmget(IPCKEY, <span class="number">1028</span>, <span class="number">0640</span> | IPC_CREAT | IPC_EXCL);</span><br><span class="line">    <span class="keyword">if</span>(shm_id == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"shmget error\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//  将这块共享内存区附加到自己的内存段</span></span><br><span class="line">    p_setting = (st_setting *)shmat(shm_id, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">strncpy</span>(p_setting-&gt;agen, <span class="string">"gatieme"</span>, <span class="number">10</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"agen : %s\n"</span>, p_setting-&gt;agen);</span><br><span class="line"></span><br><span class="line">    p_setting-&gt;file_no = <span class="number">1</span>;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"file_no : %d\n"</span>,p_setting-&gt;file_no);</span><br><span class="line"></span><br><span class="line">    system(<span class="string">"ipcs -m"</span>);<span class="comment">//  此时可看到有进程关联到共享内存的信息，nattch为1</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//  将这块共享内存区从自己的内存段删除出去</span></span><br><span class="line">    <span class="keyword">if</span>(shmdt(p_setting) == <span class="number">-1</span>)</span><br><span class="line">       perror(<span class="string">" detach error "</span>);</span><br><span class="line"></span><br><span class="line">    system(<span class="string">"ipcs -m"</span>);<span class="comment">//  此时可看到有进程关联到共享内存的信息。nattch为0</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//  删除共享内存</span></span><br><span class="line">    <span class="keyword">if</span> (shmctl( shm_id , IPC_RMID , <span class="literal">NULL</span> ) == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">" delete error "</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    system(<span class="string">"ipcs -m"</span>);<span class="comment">//  此时可看到有进程关联到共享内存的信息，nattch为0</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> EXIT_SUCCESS;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="http://img.blog.csdn.net/20160329155902306" alt="这里写图片描写叙述"></p>
+<h2 id="ipcrm命令删除共享内存"><a href="#ipcrm命令删除共享内存" class="headerlink" title="ipcrm命令删除共享内存"></a>ipcrm命令删除共享内存</h2><p>在使用共享内存。结束程序退出后。假设你没在程序中用shmctl()删除共享内存的话。一定要在命令行下用ipcrm命令删除这块共享内存。</p>
+<p>你要是无论的话，它就一直在那儿放着了。</p>
+<p>简单解释一下ipcs命令和ipcrm命令。</p>
+<p>取得ipc信息：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">usage : ipcs -asmq -tclup </span><br><span class="line">    ipcs [-s -m -q] -i id</span><br><span class="line">    ipcs -h <span class="keyword">for</span> help.</span><br><span class="line">m      输出有关共享内存(shared memory)的信息</span><br><span class="line">-q      输出有关信息队列(message <span class="built_in">queue</span>)的信息</span><br><span class="line">-s      输出有关“遮断器”(semaphore)的信息</span><br></pre></td></tr></table></figure>
+<p>删除ipc</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">usage: ipcrm [ [-q msqid] [-m shmid] [-s semid]</span><br><span class="line">          [-Q msgkey] [-M shmkey] [-S semkey] ... ]</span><br></pre></td></tr></table></figure>
+<h1 id="消息队列"><a href="#消息队列" class="headerlink" title="消息队列"></a>消息队列</h1><p><a href="https://blog.csdn.net/wei_cheng18/article/details/79661495" target="_blank" rel="noopener">https://blog.csdn.net/wei_cheng18/article/details/79661495</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Linux学习总结</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/04/01/Linux进程间通信2/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Linux之IO操作" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/04/01/Linux之IO操作/">Linux之IO操作</a>
+    </h1>
+  
+
+        
+        <a href="/2019/04/01/Linux之IO操作/" class="archive-article-date">
+  	<time datetime="2019-04-01T02:47:55.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-01</time>
+</a>
+        
+      </header>
     
     <div class="article-entry" itemprop="articleBody">
       
@@ -170,20 +660,14 @@
 </ul>
 <p><strong>3.lseek(int fd, off_t offset, int whence)</strong></p>
 <ul>
-<li><p>第二个参数：偏移量，每一读写操作所需要移动的距离，单位是字节的数量，可正可负（向前移、向后移）</p>
-</li>
-<li><p>第三个参数：当前位置的基点</p>
-<ol>
-<li><p>SEEK_SET：当前位置为文件的揩油，新位置为偏移量的大小；</p>
-</li>
-<li><p>SEEK_CUR：当前为文件指针的位置，新位置为当前位置加上偏移量；</p>
-</li>
-<li><p>SEEK_END：当前位置为文件的结尾，新位置为文件的大小加上偏移量的大小</p>
-</li>
+<li>第二个参数：偏移量，每一读写操作所需要移动的距离，单位是字节的数量，可正可负（向前移、向后移）</li>
+<li>第三个参数：当前位置的基点<ol>
+<li>SEEK_SET：当前位置为文件的揩油，新位置为偏移量的大小；</li>
+<li>SEEK_CUR：当前为文件指针的位置，新位置为当前位置加上偏移量；</li>
+<li>SEEK_END：当前位置为文件的结尾，新位置为文件的大小加上偏移量的大小</li>
 </ol>
 </li>
-<li><p>返回值：当前文件的位置指针值</p>
-</li>
+<li>返回值：当前文件的位置指针值</li>
 </ul>
 <h2 id="标准IO操作函数"><a href="#标准IO操作函数" class="headerlink" title="标准IO操作函数"></a>标准IO操作函数</h2><p>三个缓存，从上至下，从外到内：</p>
 <ul>
@@ -279,16 +763,12 @@
 </ul>
 <p><strong>7.fprintf、printf、sprintf</strong></p>
 <ul>
-<li><p>int fprintf(FILE *stream,“字符串格式”)</p>
-<ol>
-<li><p>fprintf可以输出到文件中，也可以输出到显示器stdout</p>
-</li>
-<li><p>printf只能输出到显示器中</p>
-</li>
+<li>int fprintf(FILE *stream,“字符串格式”)<ol>
+<li>fprintf可以输出到文件中，也可以输出到显示器stdout</li>
+<li>printf只能输出到显示器中</li>
 </ol>
 </li>
-<li><p>int sprintf(str *,“字符串格式”)，输出内容到一个字符串中</p>
-</li>
+<li>int sprintf(str *,“字符串格式”)，输出内容到一个字符串中</li>
 </ul>
 <p><strong>8.一个字符读写函数fgetc和fputc</strong></p>
 <ul>
@@ -357,20 +837,14 @@
 <p>也是调整指针到任意位置。与rewind一样，不多解释</p>
 <h2 id="linux下静态库和动态库（共享库）的制作与使用"><a href="#linux下静态库和动态库（共享库）的制作与使用" class="headerlink" title="linux下静态库和动态库（共享库）的制作与使用"></a>linux下静态库和动态库（共享库）的制作与使用</h2><p>Linux操作系统支持的函数库分为：</p>
 <ul>
-<li><p>静态库，libxxx.a，在编译时就将库编译进可执行程序中。</p>
-<ol>
-<li><p>优点：程序的运行环境不需要外部函数库</p>
-</li>
-<li><p>缺点：可执行程序大</p>
-</li>
+<li>静态库，libxxx.a，在编译时就将库编译进可执行程序中。<ol>
+<li>优点：程序的运行环境不需要外部函数库</li>
+<li>缺点：可执行程序大</li>
 </ol>
 </li>
-<li><p>动态库，又称共享库，libxxx.so，在运行时将库加载到可执行程序中。</p>
-<ol>
-<li><p>优点：可执行程序小</p>
-</li>
-<li><p>缺点：程序的运行环境需要相应的函数库</p>
-</li>
+<li>动态库，又称共享库，libxxx.so，在运行时将库加载到可执行程序中。<ol>
+<li>优点：可执行程序小</li>
+<li>缺点：程序的运行环境需要相应的函数库</li>
 </ol>
 </li>
 </ul>
@@ -414,7 +888,80 @@
 <p><strong>3.动态库的操作</strong></p>
 <p>如果从别处得到一个静态库libunknown.a，想知道其中包含哪些模块。</p>
 <p>命令：ar -t  libunknown.a</p>
-<h1 id="进程通信"><a href="#进程通信" class="headerlink" title="进程通信"></a>进程通信</h1><p>1.什么是进程间通信</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Linux学习总结</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/04/01/Linux之IO操作/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Linux进程间通信" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/04/01/Linux进程间通信/">Linux进程间通信1</a>
+    </h1>
+  
+
+        
+        <a href="/2019/04/01/Linux进程间通信/" class="archive-article-date">
+  	<time datetime="2019-04-01T02:47:40.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-01</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="进程通信"><a href="#进程通信" class="headerlink" title="进程通信"></a>进程通信</h1><p><strong>1.什么是进程间通信</strong></p>
 <p><strong>进程通信：在用户空间实现进程通信是不可能的，需要通过linux内核通信</strong></p>
 <p><strong>线程间通信：在用户空间就可以实现，可以通过全局变量通信</strong></p>
 <p>进程通信：fork()；子进程对父进程进行拷贝，包括pipe的文件描述符</p>
@@ -426,10 +973,12 @@
 <li>第三个参数是线程运行函数的起始地址。</li>
 <li>最后一个参数是运行函数的参数。</li>
 </ul>
-<h2 id="有哪几种通信方式？"><a href="#有哪几种通信方式？" class="headerlink" title="有哪几种通信方式？"></a>有哪几种通信方式？</h2><p>管道通信：无名管道、有名管道（文件系统中有名）</p>
+<p><strong>2.有哪几种通信方式？</strong></p>
+<p>6种。</p>
+<p>管道通信：无名管道、有名管道（文件系统中有名）</p>
 <p>信号通信：信号通信包括：信号的发送、信号的接收、信号的处理</p>
 <p>IPC通信（内核通信）：共享内存、消息队列和信号灯</p>
-<h3 id="无名管道（文件系统中不存在这个文件节点）"><a href="#无名管道（文件系统中不存在这个文件节点）" class="headerlink" title="无名管道（文件系统中不存在这个文件节点）"></a>无名管道（文件系统中不存在这个文件节点）</h3><p>头文件unistd.h</p>
+<h2 id="无名管道（文件系统中不存在这个文件节点）"><a href="#无名管道（文件系统中不存在这个文件节点）" class="headerlink" title="无名管道（文件系统中不存在这个文件节点）"></a>无名管道（文件系统中不存在这个文件节点）</h2><p>头文件unistd.h</p>
 <p>管道文件是一个<strong>特殊的文件</strong>，是由队列来实现的。</p>
 <p>在文件IO中创建一个文件或打开一个文件是由open函数来实现的，它不能创建管道文件。只能用pipe函数来创建管道</p>
 <p>函数形式：int pipe(int fd[2])</p>
@@ -444,47 +993,53 @@
 <li>管道中的东西，读完了就删除了</li>
 <li>如果管道中没有东西可读，则会阻塞。满了写，也会阻塞。进入睡眠状态。</li>
 </ol>
-<h3 id="有名管道（文件系统中存在这个文件节点）"><a href="#有名管道（文件系统中存在这个文件节点）" class="headerlink" title="有名管道（文件系统中存在这个文件节点）"></a>有名管道（文件系统中存在这个文件节点）</h3><p>管道文件，文件系统中存在这个文件节点，每一个文件节点都有一个inode号，不占用磁盘空间，而且这个一个特殊的文件类型：P管道类型。</p>
-<p><strong>1.int mkfifo(const char *filename, mode_t mode);</strong></p>
+<h2 id="有名管道（文件系统中存在这个文件节点）"><a href="#有名管道（文件系统中存在这个文件节点）" class="headerlink" title="有名管道（文件系统中存在这个文件节点）"></a>有名管道（文件系统中存在这个文件节点）</h2><p>头文件unistd.h</p>
+<p>管道文件，文件系统中存在这个文件节点，每一个文件节点都有一个inode号，不占用磁盘空间，而且这个一个特殊的文件类型：P管道类型。</p>
+<p><strong>1.int mkfifo (const char *filename, mode_t mode);</strong></p>
 <ul>
 <li>功能：创建管道文件的节点，没有在内核中创建管道。只有通过open函数打开这个文件时才会在内核空间创建管道</li>
 <li>参数：管道文件文件名，权限，创建的文件权限仍然和umask有关系。。</li>
 <li>返回值：成功0，失败-1</li>
 </ul>
-<p>或者直接$mkfifo myfifo</p>
+<p>或者<strong>直接$mkfifo myfifo</strong></p>
+<p><strong>2.打开有名管道文件</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//使用读方式去打开管道</span></span><br><span class="line">fd = open(<span class="string">"./myfifo"</span>,O_RDONLY);</span><br><span class="line"><span class="comment">//使用写方式去打开管道</span></span><br><span class="line">fd = open(<span class="string">"./myfifo"</span>,O_WRONLY);</span><br></pre></td></tr></table></figure>
+<p><strong>3.向有名管道进行读写</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//向管道写数据，write参数分别是：文件描述符、数据段地址（也可以是字符串）、写多少B数据</span></span><br><span class="line">Pi = <span class="number">1</span>;</span><br><span class="line">write(fd,&amp;Pi,<span class="number">1</span>);</span><br><span class="line"><span class="comment">//向管道读数据，read参数分别是：文件描述符、数据段地址（也可以是字符串）、写多少B数据</span></span><br><span class="line">read(fd,&amp;Pi,<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
 <h2 id="信号及信号源"><a href="#信号及信号源" class="headerlink" title="信号及信号源"></a>信号及信号源</h2><p><strong>信号本质</strong></p>
 <p>信号是在软件层次上对中断机制的一种模拟，在原理上，一个进程收到一个信号与处理器收到一个中断请求可以说是一样的。信号是异步的，一个进程不必通过任何操作来等待信号的到达，事实上，进程也不知道信号到底什么时候到达。</p>
 <p>信号是进程间通信机制中唯一的异步通信机制，可以看作是异步通知，通知接收信号的进程有哪些事情发生了。信号机制经过POSIX实时扩展后，功能更加强大，除了基本通知功能外，还可以传递附加信息。</p>
 <p><strong>信号来源</strong></p>
 <p>信号事件的发生有两个来源：硬件来源(比如我们按下了键盘或者其它硬件故障)；软件来源，最常用发送信号的系统函数是kill, raise, alarm和setitimer以及sigqueue函数，软件来源还包括一些非法运算等操作。</p>
-<h2 id="信号的种类"><a href="#信号的种类" class="headerlink" title="信号的种类"></a>信号的种类</h2><p>系统支持的所有信号如下所示：</p>
+<h3 id="信号的种类"><a href="#信号的种类" class="headerlink" title="信号的种类"></a>信号的种类</h3><p>系统支持的所有信号如下所示：</p>
 <p><img src="https://images0.cnblogs.com/blog2015/757743/201507/200958340668111.png" alt="img"></p>
 <p>进程可以屏蔽掉大多数信号，除了SIGSTOP和SIGKILL。</p>
-<h2 id="进程对信号的响应"><a href="#进程对信号的响应" class="headerlink" title="进程对信号的响应"></a>进程对信号的响应</h2><p>进程可以通过三种方式来响应一个信号：</p>
+<p>进程对信号的响应</p>
+<p>进程可以通过三种方式来响应一个信号：</p>
 <p>（1）忽略信号，即对信号不做任何处理，其中，有两个信号不能忽略：SIGKILL及SIGSTOP；</p>
 <p>（2）捕捉信号。定义信号处理函数，当信号发生时，执行相应的处理函数；</p>
 <p>（3）执行缺省操作，Linux对每种信号都规定了默认操作。注意，进程对实时信号的缺省反应是进程终止。</p>
 <p>Linux究竟采用上述三种方式的哪一个来响应信号，取决于传递给相应API函数的参数。</p>
-<h2 id="信号的处理"><a href="#信号的处理" class="headerlink" title="信号的处理"></a>信号的处理</h2><p>如果进程要处理某一信号，那么就要在进程中安装该信号。安装信号主要用来确定信号值及进程针对该信号值的动作之间的映射关系，即进程将要处理哪个信号；该信号被传递给进程时，将执行何种操作。</p>
-<p>Linux主要有两个函数实现信号的安装：signal()、sigaction()。其中signal()在可靠信号系统调用的基础上实现, 是库函数。它只有两个参数，不支持信号传递信息，主要是用于前32种非实时信号的安装；而sigaction()是较新的函数（由两个系统调用实现：sys_signal以及sys_rt_sigaction），有三个参数，支持信号传递信息，主要用来与 sigqueue() 系统调用配合使用，当然，sigaction()同样支持非实时信号的安装。sigaction()优于signal()主要体现在支持信号带有参数。</p>
-<h3 id="signal"><a href="#signal" class="headerlink" title="signal"></a>signal</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">typedef</span> <span class="title">void</span> <span class="params">(*<span class="keyword">sighandler_t</span>)</span><span class="params">(<span class="keyword">int</span>)</span></span>;</span><br><span class="line">　　<span class="keyword">sighandler_t</span> signal(<span class="keyword">int</span> signum, <span class="keyword">sighandler_t</span> handler));</span><br></pre></td></tr></table></figure>
+<h2 id="信号的处理"><a href="#信号的处理" class="headerlink" title="信号的处理"></a>信号的处理</h2><p>如果进程要处理某一信号，那么就要在进程中监测该信号。监测信号主要用来确定信号值及进程针对该信号值的动作之间的映射关系，即进程将要处理哪个信号；该信号被传递给进程时，将执行何种操作。</p>
+<p>Linux主要有两个函数实现<strong>信号的监测：signal()、sigaction()。</strong>其中signal()在可靠信号系统调用的基础上实现, 是库函数。它只有两个参数，不支持信号传递信息，主要是用于前32种非实时信号的监测；而sigaction()是较新的函数（由两个系统调用实现：sys_signal以及sys_rt_sigaction），有三个参数，支持信号传递信息，主要用来与 sigqueue() 系统调用配合使用，当然，sigaction()同样支持非实时信号的监测。sigaction()优于signal()主要体现在支持信号带有参数。</p>
+<h4 id="signal"><a href="#signal" class="headerlink" title="signal"></a>signal</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">typedef</span> <span class="title">void</span> <span class="params">(*<span class="keyword">sighandler_t</span>)</span><span class="params">(<span class="keyword">int</span>)</span></span>;</span><br><span class="line">　　<span class="keyword">sighandler_t</span> signal(<span class="keyword">int</span> signum, <span class="keyword">sighandler_t</span> handler));</span><br></pre></td></tr></table></figure>
 <p> 第一个参数指定信号的值，第二个参数指定针对前面信号值的处理，可以忽略该信号（参数设为SIG_IGN）；可以采用系统默认方式处理信号(参数设为SIG_DFL)；也可以自己实现处理方式(参数指定一个函数地址)。</p>
-<p>如果signal()调用成功，返回最后一次为安装信号signum而调用signal()时的handler值；失败则返回SIG_ERR。</p>
-<h3 id="sigaction"><a href="#sigaction" class="headerlink" title="sigaction"></a>sigaction</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　int sigaction(int signum,const struct sigaction *act,struct sigaction *oldact));</span><br></pre></td></tr></table></figure>
-<p>sigaction函数用于改变进程接收到特定信号后的行为。该函数的第一个参数为信号的值，可以为除SIGKILL及SIGSTOP外的任何一个特定有效的信号（为这两个信号定义自己的处理函数，将导致信号安装错误）。第二个参数是指向结构sigaction的一个实例的指针，在结构 sigaction的实例中，指定了对特定信号的处理，可以为空，进程会以缺省方式对信号处理；第三个参数oldact指向的对象用来保存原来对相应信号的处理，可指定oldact为NULL。如果把第二、第三个参数都设为NULL，那么该函数可用于检查信号的有效性。</p>
+<p>如果signal()调用成功，返回最后一次为监测信号signum而调用signal()时的handler值；失败则返回SIG_ERR。</p>
+<h4 id="sigaction"><a href="#sigaction" class="headerlink" title="sigaction"></a>sigaction</h4><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　int sigaction(int signum,const struct sigaction *act,struct sigaction *oldact));</span><br></pre></td></tr></table></figure>
+<p>sigaction函数用于改变进程接收到特定信号后的行为。该函数的第一个参数为信号的值，可以为除SIGKILL及SIGSTOP外的任何一个特定有效的信号（为这两个信号定义自己的处理函数，将导致信号监测错误）。第二个参数是指向结构sigaction的一个实例的指针，在结构 sigaction的实例中，指定了对特定信号的处理，可以为空，进程会以缺省方式对信号处理；第三个参数oldact指向的对象用来保存原来对相应信号的处理，可指定oldact为NULL。如果把第二、第三个参数都设为NULL，那么该函数可用于检查信号的有效性。</p>
 <p>第二个参数最为重要，其中包含了对指定信号的处理、信号所传递的信息、信号处理函数执行过程中应屏蔽掉哪些函数等等。</p>
-<h2 id="信号的发送"><a href="#信号的发送" class="headerlink" title="信号的发送"></a>信号的发送</h2><p>发送信号的主要函数有：kill()、raise()、 sigqueue()、alarm()、setitimer()以及abort()。</p>
-<h3 id="kill"><a href="#kill" class="headerlink" title="kill"></a>kill</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">int</span> <span class="title">kill</span><span class="params">(<span class="keyword">pid_t</span> pid, <span class="keyword">int</span> signo)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="信号的发送"><a href="#信号的发送" class="headerlink" title="信号的发送"></a>信号的发送</h3><p>发送信号的主要函数有：kill()、raise()、 sigqueue()、alarm()、setitimer()以及abort()。</p>
+<h4 id="kill"><a href="#kill" class="headerlink" title="kill"></a>kill</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">int</span> <span class="title">kill</span><span class="params">(<span class="keyword">pid_t</span> pid, <span class="keyword">int</span> signo)</span></span>;</span><br></pre></td></tr></table></figure>
 <p>signo是信号值，当为0时（即空信号），实际不发送任何信号，但照常进行错误检查，因此，可用于检查目标进程是否存在，以及当前进程是否具有向目标发送信号的权限（root权限的进程可以向任何进程发送信号，非root权限的进程只能向属于同一个session或者同一个用户的进程发送信号）。</p>
-<h3 id="raise"><a href="#raise" class="headerlink" title="raise"></a>raise</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">int</span> <span class="title">raise</span><span class="params">(<span class="keyword">int</span> signo)</span></span>;</span><br></pre></td></tr></table></figure>
+<h4 id="raise"><a href="#raise" class="headerlink" title="raise"></a>raise</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">int</span> <span class="title">raise</span><span class="params">(<span class="keyword">int</span> signo)</span></span>;</span><br></pre></td></tr></table></figure>
 <p>向进程本身发送信号，参数为即将发送的信号值。调用成功返回 0；否则，返回 -1。</p>
-<h3 id="sigqueue"><a href="#sigqueue" class="headerlink" title="sigqueue"></a>sigqueue</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">int</span> <span class="title">sigqueue</span><span class="params">(<span class="keyword">pid_t</span> pid, <span class="keyword">int</span> signo, <span class="keyword">const</span> <span class="keyword">union</span> sigval val)</span></span>;</span><br></pre></td></tr></table></figure>
+<h4 id="sigqueue"><a href="#sigqueue" class="headerlink" title="sigqueue"></a>sigqueue</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">int</span> <span class="title">sigqueue</span><span class="params">(<span class="keyword">pid_t</span> pid, <span class="keyword">int</span> signo, <span class="keyword">const</span> <span class="keyword">union</span> sigval val)</span></span>;</span><br></pre></td></tr></table></figure>
 <p>sigqueue()与函数sigaction()配合使用，sigqueue的第一个参数是指定接收信号的进程ID，第二个参数确定即将发送的信号，第三个参数是一个联合数据结构union sigval，指定了信号传递的参数，即通常所说的4字节值。</p>
-<p>sigqueue()比kill()传递了更多的附加信息，但sigqueue()只能向一个进程发送信号，而不能发送信号给一个进程组。如果signo=0，将会执行错误检查，但实际上不发送任何信号，0值信号可用于检查pid的有效性以及当前进程是否有权限向目标进程发送信号。在调用sigqueue时，sigval_t指定的信息会拷贝到3参数信号处理函数（3参数信号处理函数指的是信号处理函数由 sigaction安装，并设定了sa_sigaction指针）的siginfo_t结构中，这样信号处理函数就可以处理这些信息了。由于 sigqueue系统调用支持发送带参数信号，所以比kill()系统调用的功能要灵活和强大得多。</p>
+<p>sigqueue()比kill()传递了更多的附加信息，但sigqueue()只能向一个进程发送信号，而不能发送信号给一个进程组。如果signo=0，将会执行错误检查，但实际上不发送任何信号，0值信号可用于检查pid的有效性以及当前进程是否有权限向目标进程发送信号。在调用sigqueue时，sigval_t指定的信息会拷贝到3参数信号处理函数（3参数信号处理函数指的是信号处理函数由 sigaction监测，并设定了sa_sigaction指针）的siginfo_t结构中，这样信号处理函数就可以处理这些信息了。由于 sigqueue系统调用支持发送带参数信号，所以比kill()系统调用的功能要灵活和强大得多。</p>
 <p>注：sigqueue()发送非实时信号时，第三个参数包含的信息仍然能够传递给信号处理函数； sigqueue()发送非实时信号时，仍然不支持排队，即在信号处理函数执行过程中到来的所有相同信号，都被合并为一个信号。</p>
-<h3 id="alarm"><a href="#alarm" class="headerlink" title="alarm"></a>alarm</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">unsigned</span> <span class="keyword">int</span> <span class="title">alarm</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> seconds)</span></span>;</span><br></pre></td></tr></table></figure>
+<h4 id="alarm"><a href="#alarm" class="headerlink" title="alarm"></a>alarm</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">unsigned</span> <span class="keyword">int</span> <span class="title">alarm</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> seconds)</span></span>;</span><br></pre></td></tr></table></figure>
 <p>专门为SIGALRM信号而设，在指定的时间seconds秒后，将向进程本身发送SIGALRM信号，又称为闹钟时间。进程调用alarm后，任何以前的alarm()调用都将无效。如果参数seconds为零，那么进程内将不再包含任何闹钟时间。返回值，如果调用alarm()前，进程中已经设置了闹钟时间，则返回上一个闹钟时间的剩余时间，否则返回0。</p>
-<h3 id="settimer"><a href="#settimer" class="headerlink" title="settimer"></a>settimer</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　int setitimer(int which, const struct itimerval *value, struct itimerval *ovalue));</span><br></pre></td></tr></table></figure>
+<h4 id="settimer"><a href="#settimer" class="headerlink" title="settimer"></a>settimer</h4><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　int setitimer(int which, const struct itimerval *value, struct itimerval *ovalue));</span><br></pre></td></tr></table></figure>
 <p>setitimer()比alarm功能强大，支持3种类型的定时器：</p>
 <ul>
 <li>ITIMER_REAL： 设定绝对时间；经过指定的时间后，内核将发送SIGALRM信号给本进程；</li>
@@ -492,9 +1047,9 @@
 <li>ITIMER_PROF 设定进程执行以及内核因本进程而消耗的时间和，经过指定的时间后，内核将发送ITIMER_VIRTUAL信号给本进程；</li>
 </ul>
 <p>setitimer()第一个参数which指定定时器类型（上面三种之一）；第二个参数是结构itimerval的一个实例；第三个参数可不做处理。setitimer()调用成功返回0，否则返回-1。</p>
-<h3 id="abort"><a href="#abort" class="headerlink" title="abort"></a>abort</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">void</span> <span class="title">abort</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+<h4 id="abort"><a href="#abort" class="headerlink" title="abort"></a>abort</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">void</span> <span class="title">abort</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br></pre></td></tr></table></figure>
 <p>向进程发送SIGABORT信号，默认情况下进程会异常退出，当然可定义自己的信号处理函数。即使SIGABORT被进程设置为阻塞信号，调用abort()后，SIGABORT仍然能被进程接收。该函数无返回值。</p>
-<h2 id="信号生命周期"><a href="#信号生命周期" class="headerlink" title="信号生命周期"></a>信号生命周期</h2><p>对于一个完整的信号生命周期(从信号发送到相应的处理函数执行完毕)来说，可以分为三个重要的阶段，这三个阶段由四个重要事件来刻画：信号诞生；信号在进程中注册完毕；信号在进程中的注销完毕；信号处理函数执行完毕。 </p>
+<h3 id="信号生命周期"><a href="#信号生命周期" class="headerlink" title="信号生命周期"></a>信号生命周期</h3><p>对于一个完整的信号生命周期(从信号发送到相应的处理函数执行完毕)来说，可以分为三个重要的阶段，这三个阶段由四个重要事件来刻画：信号诞生；信号在进程中注册完毕；信号在进程中的注销完毕；信号处理函数执行完毕。 </p>
 
       
 
@@ -503,11 +1058,22 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Linux学习总结</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2019/03/29/Linux嵌入式笔记/">展开全文 >></a>
+          <a class="article-more-a" href="/2019/04/01/Linux进程间通信/">展开全文 >></a>
         </p>
       
 
@@ -1379,433 +1945,6 @@
 
 
   
-    <article id="post-深度探索C-对象模型-第三章" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/03/19/深度探索C-对象模型-第三章/">深度探索C++对象模型-第三章</a>
-    </h1>
-  
-
-        
-        <a href="/2019/03/19/深度探索C-对象模型-第三章/" class="archive-article-date">
-  	<time datetime="2019-03-19T11:13:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-19</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>说明：</p>
-<p>​    <u>不是很清楚的点</u>，用下划线。</p>
-<p>​    <em>解答</em>，用斜体；</p>
-<p>​    <strong>重点</strong>，用粗体加粗；</p>
-<h1 id="第二章-Data-语意学"><a href="#第二章-Data-语意学" class="headerlink" title="第二章 Data 语意学"></a>第二章 Data 语意学</h1><h2 id="3-2-Data-Member-的布局"><a href="#3-2-Data-Member-的布局" class="headerlink" title="3.2 Data Member 的布局"></a>3.2 Data Member 的布局</h2><p>非静态成员变量在class object中的排列顺序将和其声明的顺序一样的。但C++ standard允许编译器将多个access sections之中的data members自由排列，不必在乎他们的出现在class中的声明顺序。</p>
-<h2 id="3-3-Data-Member-的存取"><a href="#3-3-Data-Member-的存取" class="headerlink" title="3.3 Data Member 的存取"></a>3.3 Data Member 的存取</h2><h3 id="存取代价："><a href="#存取代价：" class="headerlink" title="存取代价："></a>存取代价：</h3><p>每一个member 的存取许可（private public protected），以及与class的关联，并不会导致任何空间上或执行时间上的额外负担——不论是在个别的class objects 或是在static data member 本身。</p>
-<h3 id="static-data-members："><a href="#static-data-members：" class="headerlink" title="static data members："></a>static data members：</h3><p><strong>静态数据成员（static data members） 被视为global变量，只有一个实体，存放在程序的data segment（数据段）之中</strong>，每次取static member 就会被内部转化为对该唯一的extern 实体的直接参考操作。若取一个static data member的地址，会得到一个数据类型的指针，而不是只想起class member的指针。</p>
-<h3 id="nonstatic-data-members："><a href="#nonstatic-data-members：" class="headerlink" title="nonstatic data members："></a>nonstatic data members：</h3><p>只要程序猿在一个成员函数中直接处理一个非静态成员变量，“隐式类对象（<strong>this指针</strong>）”就会出现。</p>
-<p>欲对一个nonstatic data member 进行存取操作，编译器需要把this指针（class object的起始地址）加上data member的偏移量。</p>
-<p>非静态成员变量的<strong>偏移量在编译时期</strong>就可以获知，即使这个成员变量是属于被派生的类。因此存取效率高。</p>
-<h2 id="3-4-继承-与-Data-Member"><a href="#3-4-继承-与-Data-Member" class="headerlink" title="3.4 继承 与 Data Member"></a>3.4 继承 与 Data Member</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Point2d</span>&#123;</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    	<span class="comment">//....</span></span><br><span class="line">    <span class="keyword">private</span>:</span><br><span class="line">    	<span class="keyword">float</span> x,y;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Point3d</span>&#123;</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    	<span class="comment">//....</span></span><br><span class="line">    <span class="keyword">private</span>:</span><br><span class="line">    	<span class="keyword">float</span> x,y,z;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>讨论上述结构，与 “提供继承结构” 有什么不同？</p>
-<p>下面分四种情况讨论。</p>
-<h3 id="1-只要继承不要多态"><a href="#1-只要继承不要多态" class="headerlink" title="1.只要继承不要多态"></a>1.只要继承不要多态</h3><p><strong>具体继承（相对于虚拟继承）并不会增加空间或存储时间上的额外负担。</strong>这种情况base class和derived class的objects都是从相同的地址开始，其差异只在于derived object 比较大，用以容纳自建的静态数据成员，<strong>把一个derived class object指定给base class 的指针或引用</strong>（一定要通过指针或引用），并不需要编译器去调停或修改地址，提供了最佳执行效率。</p>
-<h3 id="2-加上多态"><a href="#2-加上多态" class="headerlink" title="2.加上多态"></a>2.加上多态</h3><p>即在继承关系中，提供一个<strong>虚函数</strong>接口。</p>
-<p>多态带来了程序弹性，但这种弹性会带来空间和存取时间的额外负担：</p>
-<ol>
-<li>导入一个虚函数表 ，用来存储它所声明的每一个virtual functions的地址。</li>
-<li>在每一个class object中导入一个vptr，提供执行期的链接，使每一个object能够找到相应的virtual table。</li>
-<li>加强constructor，使它能够为vptr设定初始值，让它指向class 所对应的virtual table 。</li>
-<li>加强destructor，使它能够消抹“指向class 相关virtual table”的vptr。</li>
-<li></li>
-</ol>
-<h3 id="3-多重继承"><a href="#3-多重继承" class="headerlink" title="3.多重继承"></a>3.多重继承</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">point2d</span>&#123;</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    	<span class="comment">//....</span></span><br><span class="line">    <span class="keyword">protected</span>:</span><br><span class="line">    	<span class="keyword">float</span> x,y;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Vertex</span>&#123;</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    	<span class="comment">//....</span></span><br><span class="line">    <span class="keyword">protected</span>:</span><br><span class="line">    	Vertex *next;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Vertex3d</span>:</span> <span class="keyword">public</span> point2d, <span class="keyword">public</span> Vertex&#123; </span><br><span class="line">    <span class="comment">//point2d是第一个base class，Vertex是第二个</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    	<span class="comment">//....</span></span><br><span class="line">    <span class="keyword">protected</span>:</span><br><span class="line">    	<span class="keyword">float</span> mumble;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>对于一个多重派生对象，将其地址指定给“最左端（第一个）base class的指针”，情况和单一继承时相同，因为二者都指向了相同的起始地址；至于第二个或后面的base class 的地址指定操作，则需要将地址修改过：加上（<u>或减去，如果是downcast</u>）介于中间的base class subobject(s)的大小。</p>
-<p>如果要存取第二个（或后面）的base class 中的一个data member ，会增加额外的成本吗？<strong>不需要付出额外的成本</strong>，因为members的位置<strong>在编译时期就固定</strong>了，因此存取member只是一个简单的offset的运算。</p>
-<h3 id="4-虚拟继承"><a href="#4-虚拟继承" class="headerlink" title="4.虚拟继承"></a>4.虚拟继承</h3><p>这一部分比较难，并且各个编译器实现方式不同。</p>
-<p>class如果含有一个或多个 virtual base class subobjects 将被分割为两部分：一个不变区域和一个共享区域。</p>
-<ul>
-<li>不变区域中的数据，不管后继如何衍化，总是能有固定的offset，这部分可以被直接存取；</li>
-<li>至于共享区域，所表现的就是virtual base class subobject ，这个部分数据，其位置因为每次派生操作而有变化，所以只能间接存取。</li>
-</ul>
-<h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p><img src="http://baiy.cn/doc/cpp/image/%E9%92%BB%E7%9F%B3%E5%9E%8B%E7%BB%A7%E6%89%BF%E7%9A%84%E5%85%B8%E5%9E%8B%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80.png" alt="虚拟继承内存布局"></p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">深度探索C++对象模型-学习总结</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2019/03/19/深度探索C-对象模型-第三章/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-深度探索C-对象模型-第二章" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/03/19/深度探索C-对象模型-第二章/">深度探索C++对象模型-第二章</a>
-    </h1>
-  
-
-        
-        <a href="/2019/03/19/深度探索C-对象模型-第二章/" class="archive-article-date">
-  	<time datetime="2019-03-19T01:15:23.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-19</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>说明：</p>
-<p>​    <u>不是很清楚的点</u>，用下划线。</p>
-<p>​    <em>解答</em>，用斜体；</p>
-<p>​    <strong>重点</strong>，用粗体加粗；</p>
-<h1 id="第二章-构造函数语意学"><a href="#第二章-构造函数语意学" class="headerlink" title="第二章 构造函数语意学"></a>第二章 构造函数语意学</h1><h2 id="2-1-Default-Constructor的构造操作"><a href="#2-1-Default-Constructor的构造操作" class="headerlink" title="2.1 Default Constructor的构造操作"></a>2.1 Default Constructor的构造操作</h2><p>默认构造函数在需要时被编译器合成出来。</p>
-<p>这里的需要分为：程序的需要 和 编译器的需要。</p>
-<ul>
-<li>程序的需要：即如果编译器不合成出来，不会发生错误，但程序语意不是自己想要的。</li>
-<li>编译器的需要：即如果编译器不合成出来，将发生错误的时候。</li>
-</ul>
-<p>当编译器需要的时候，默认构造函数会被合成出来，并且只执行编译器所需要的任务。（也不会帮你赋初始值）</p>
-<h3 id="1-类中带有-Default-Constructor-的类对象成员"><a href="#1-类中带有-Default-Constructor-的类对象成员" class="headerlink" title="1.类中带有 Default Constructor 的类对象成员"></a>1.类中带有 Default Constructor 的类对象成员</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span>&#123;</span> <span class="keyword">public</span>: Foo(), Foo( <span class="keyword">int</span> ) ... &#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Bar</span>&#123;</span> <span class="keyword">public</span>: Foo foo; <span class="keyword">char</span> *str; &#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo_bar</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Bar bar;	</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>( str )&#123;  &#125;....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>如果一个class没有任何构造函数，但它内含一个对象成员，而后者有默认构造函数，那编译器需要为该class合成一个默认构造函数（如下）。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Bar::Bar()&#123;</span><br><span class="line">	<span class="comment">//被合成的默认构造函数只会满足编译器的需要，因此不会为你初始化str</span></span><br><span class="line">    foo.Foo::Foo(); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>若程序员定义了一个默认构造函数：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Bar::Bar()&#123;</span><br><span class="line">    str = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>现在程序的需求满足了，但是编译器还需要初始化foo。由于默认构造函数已经被显式定义，编译器没法合成第二个。</p>
-<p>那么编译器的行动是：</p>
-<ul>
-<li>如果一个class 内含一个或者一个以上的类对象成员 ，那么class的<strong>每一个</strong>构造函数必须调用<strong>每一个</strong>类成员的默认构造函数 。</li>
-<li>编译器会扩张已存在的构造函数<strong>们</strong>，在其中安插一些代码，使得在执行用户代码之前，先调用（调用顺序与对象成员在class 的声明次序一致）必要的默认构造函数<strong>们</strong>。</li>
-</ul>
-<h3 id="2-类继承于带有-Default-Constructor-的基类"><a href="#2-类继承于带有-Default-Constructor-的基类" class="headerlink" title="2.类继承于带有 Default Constructor 的基类"></a>2.类继承于带有 Default Constructor 的基类</h3><p>与前面道理相同：</p>
-<ul>
-<li>若没有，则在类中没有默认构造函数，便合成；</li>
-<li>若有，则在类中的默认构造函数们在执行用户代码之前，先调用（调用次序根据他们的声明次序）所有基类的默认构造函数。</li>
-</ul>
-<h3 id="3-“带有一个虚函数”的类"><a href="#3-“带有一个虚函数”的类" class="headerlink" title="3.“带有一个虚函数”的类"></a>3.“带有一个虚函数”的类</h3><p>下面两种情况，同样需要合成默认构造函数：</p>
-<ol>
-<li>class 声明（或继承）一个虚函数；</li>
-<li>class派生自一个继承串链，其中一个或者更多的 virtual base class（虚基类）；</li>
-</ol>
-<p>因为一个类中若存在虚函数，那就少不了vptr与vtbl。</p>
-<p>因此在<strong>编译期间</strong>发生：</p>
-<ol>
-<li><p>一个<strong>虚函数表</strong>会被编译器产生出来，内放class 的虚函数们的地址；</p>
-</li>
-<li><p>在<strong>每一个类对象</strong>中，一个额外的pointer member（vptr）会被编译器合成出来，内含相关的虚函数表的地址；</p>
-<p>【注】每一个类对象的意思是每一个有虚函数的类，就是说若基类与子类中都有虚函数，那么在构造函数中，都会执行这两步。</p>
-</li>
-</ol>
-<p>在合成的构造函数中，编译器会为每一个“带有一个虚函数”的类（或者其派生类）的<strong>对象实例</strong>设定vptr的初值，并在其中放置虚函数表的地址。</p>
-<h3 id="4-“带有一个虚基类”的类"><a href="#4-“带有一个虚基类”的类" class="headerlink" title="4.“带有一个虚基类”的类"></a>4.“带有一个虚基类”的类</h3><p>这一小节有点笼统。</p>
-<p>Virtual base class的实现法在不同编译器之间有很大差异。然而，<u>每一个实现的共同点在于必须使 虚基类 在其每一个 派生类 中的位置，能够在执行期准备妥当。</u></p>
-<p>对于class所定义的每一个constructor ，编译器都会安插那些“允许每一个virtual base class 的执行期存取操作”的代码。</p>
-<p><strong>意思是：</strong>因为没有办法在编译期确定 “虚基类中成员” 的实际偏移位置，因此只能在构造函数中加一些代码，合法化 “每一个虚基类的执行期存取操作”。</p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>以上4种情况，会导致“编译器必须为未声明构造函数的类合成一个默认构造函数 ”，这只是编译器（而非程序）的需要。</p>
-<p>至于没有存在这4种情况,而又没有声明构造函数的class ，默认构造函数不会被合成出来的。</p>
-<p>所有其他的<strong>非静态变量</strong> ，如整数，整数指针，整数数组等是不会被初始化的，这些初始化操作对程序是必须的，但对编译器则并非需要的。</p>
-<p>C++新手一般有两个误解：</p>
-<ol>
-<li>任何class 如果没有定义默认构造函数，就会被合成出来一个；</li>
-<li>编译器合成出来的默认构造函数会明确设定 class 内每一个data member的默认值；</li>
-</ol>
-<h2 id="2-2-Copy-Constructor的构造操作"><a href="#2-2-Copy-Constructor的构造操作" class="headerlink" title="2.2 Copy Constructor的构造操作"></a>2.2 Copy Constructor的构造操作</h2><p>有三种情况，会以一个类的内容作为另一类对象的初值。</p>
-<ol>
-<li>最明显的当然是对一个object做明确的初始化操作；（<code>X xx = x;</code>）</li>
-<li>当class object被当做参数交给某个函数；</li>
-<li>当函数返回一个class object；</li>
-</ol>
-<h3 id="1-Default-Memberwise-Initialization-逐个成员初始化"><a href="#1-Default-Memberwise-Initialization-逐个成员初始化" class="headerlink" title="1.Default Memberwise Initialization(逐个成员初始化)"></a>1.Default Memberwise Initialization(逐个成员初始化)</h3><p>如果class 没有提供一个显式拷贝构造函数时，当class object以 “<strong>相同class的另一个object</strong>” 作为初值时，其内部是以所谓的default memberwise initialization(逐个成员初始化)方式完成的。</p>
-<p>【注】这里没提拷贝构造函数。</p>
-<p>逐个成员初始化：也就是把每一个内建的或派生的数据成员（例如一个数组或指针）的值，从某个object拷贝一份到另一个object上，但不拷贝其具体内容。例如只拷贝指针地址，不拷贝一份新的指针指向的对象，这也就是<strong>浅拷贝</strong>，不过它并不会拷贝其中member class object，而是<strong>以递归的方式</strong>实行memberwise initialization（就是再到这个member中，进行浅拷贝）。</p>
-<p><strong>memberwise initialization是如何实现的呢？</strong></p>
-<p>答案就是Bitwise Copy Semantics和default copy constructor。如果class展现了Bitwise Copy Semantics，则使用bitwise copy，否则编译器会生成默认拷贝函数。</p>
-<p>也就是说：判断是否要合成拷贝构造函数的标准，是在于class是否展现出所谓的“bitwise copy semantics”（逐位拷贝语意）。</p>
-<h3 id="2-bitwise-copy-semantics-逐位初始化"><a href="#2-bitwise-copy-semantics-逐位初始化" class="headerlink" title="2.bitwise copy semantics(逐位初始化)"></a>2.bitwise copy semantics(逐位初始化)</h3><p>那什么情况下class<strong>不展现</strong>Bitwise Copy Semantics呢？有四种情况：</p>
-<p>（等价于什么时候要用默认拷贝构造函数？）</p>
-<ul>
-<li><p>当class内含有一个类对象成员，而这个类成员内有一个默认的copy 构造函数（不论是class设计者明确声明，或者被编译器合成）；</p>
-</li>
-<li><p>当class 继承自一个基类，而基类内有copy构造函数（不论是class设计者明确声明，或者被编译器合成）；</p>
-</li>
-<li><p>当一个类声明了一个或多个virtual 函数</p>
-</li>
-<li><p>当class派生自一个继承串链，其中一个或者多个virtual base class</p>
-</li>
-</ul>
-<p>在前2种情况下，编译器必须将“类对象成员”或者“基类”的 copy constructor的调用操作 安插到 被合成的copy constructor中。</p>
-<p>后两种单独拿出来讲。</p>
-<h3 id="3-重新设定Virtual-Table-的指针"><a href="#3-重新设定Virtual-Table-的指针" class="headerlink" title="3.重新设定Virtual Table 的指针"></a>3.重新设定Virtual Table 的指针</h3><p>第一章也提到，因为class 包含virtual function， 编译时需要做扩张操作：</p>
-<ol>
-<li>增加virtual function table，内含有一个有作用的virtual function的地址；</li>
-<li>创建一个指向virtual function table的指针，安插在class object内。</li>
-</ol>
-<p>编译器对于每一个新产生的class object的vptr都必须被正确地赋值，否则将<strong>跑去执行其他对象的function</strong>了，其后果是很严重的（如图2）。因此，编译器导入一个vptr到class之中时，该class 就不在展现bitwise copy semantics，必须合成copy Constructor并将vptr适当地初始化。</p>
-<p>下图这种同个类，若按照bitwise copy，没有错误：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/16713773-f75d4c81d692ef37.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/941/format/webp" alt="img"></p>
-<p>但如下图这种，若按照bitwise copy，vptr有错误：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/16713773-e10431d769764b97.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/860/format/webp" alt="img"></p>
-<p>【注】图中，虽然Bear对draw()和animate()函数重写，但虚函数重写后也是虚函数，因此在虚函数表里。</p>
-<h3 id="4-处理Virtual-Base-Class-Subobject"><a href="#4-处理Virtual-Base-Class-Subobject" class="headerlink" title="4.处理Virtual Base Class Subobject"></a>4.处理Virtual Base Class Subobject</h3><p>virtual base class的存在需要特别处理。一个class object 如果以另一个 virtual base class subobject那么也会使“bitwise copy semantics”失效。</p>
-<p>每一个编译器对于虚拟继承的支持承诺，都是表示必须让 “derived class object 中的virtual base class subobject 位置” 在执行期就准备妥当，<strong>维护 “位置的完整性” 是编译器的责任。Bitwise copy semantics 可能会破坏这个位置，所以编译器必须自己合成出copy constructor。</strong></p>
-<p>这也就是说，拷贝构造函数和默认构造函数一样，需要的时候会进行构建，而并非程序员不写编译器就帮着构建。</p>
-<h2 id="2-4-初始化列表"><a href="#2-4-初始化列表" class="headerlink" title="2.4 初始化列表"></a>2.4 初始化列表</h2><p>下面四种情况必须使用初始化列表来初始化class 的成员：</p>
-<ol>
-<li>当初始化一个reference member时；</li>
-<li>当初始化一个const member时；</li>
-<li>当调用一个base class 的 constructor ，而它拥有一组参数（其实就是自定义的构造函数）时；</li>
-<li>当调用一个 member class 的 constructor，而它拥有一组参数时。</li>
-</ol>
-<p>编译器会一一操作初始化列表，以<strong>适当顺序</strong>在构造函数内安插舒适化操作，并且在任何用户代码之前。</p>
-<p>不过，<strong>初始化的顺序是class members声明次序决定的，不是由初始化列表决定的。</strong></p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">深度探索C++对象模型-学习总结</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2019/03/19/深度探索C-对象模型-第二章/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-深度探索C-对象模型-第一章" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/03/18/深度探索C-对象模型-第一章/">深度探索C++对象模型-第一章</a>
-    </h1>
-  
-
-        
-        <a href="/2019/03/18/深度探索C-对象模型-第一章/" class="archive-article-date">
-  	<time datetime="2019-03-18T12:29:46.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-18</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>说明：</p>
-<p>​    <u>不是很清楚的点</u>，用下划线。</p>
-<p>​    <em>解答</em>，用斜体；</p>
-<p>​    <strong>重点</strong>，用粗体加粗；</p>
-<h1 id="第一章"><a href="#第一章" class="headerlink" title="第一章"></a>第一章</h1><h2 id="1-1-C-对象模型"><a href="#1-1-C-对象模型" class="headerlink" title="1.1 C++对象模型"></a>1.1 C++对象模型</h2><p>与C语言的Struct相比：</p>
-<p>C++使用class封装之后的布局<strong>成本没有增加</strong>。</p>
-<ol>
-<li>数据成员直接在类对象内，与Struct的情况一样；</li>
-<li>成员函数虽然在类中声明，但<u>不在对象（object）中</u>；</li>
-<li><u>每一个non-inline function 只会产生一个函数实例</u>；</li>
-<li>inline function则会在每一个调用使用的地方产生一个函数实例（在调用点展开函数体）；</li>
-</ol>
-<p>class在布局以及存取时间上主要的额外负担是由virtual 引起：</p>
-<ol>
-<li>虚拟函数机制：用以支持一个有效率的“执行期绑定（runtime binding)”；</li>
-<li>虚拟基类：用以实现“多次出现在继承体系中的 base class ,有一个单一的被共享的实体”；</li>
-</ol>
-<h3 id="C-对象模型"><a href="#C-对象模型" class="headerlink" title="C++对象模型"></a>C++对象模型</h3><p>在C++对象模型中</p>
-<ul>
-<li><p>非静态数据成员：被放置在每一个class object（对象）之内；</p>
-</li>
-<li><p>静态数据成员：被存放在所以class object （对象）之外；</p>
-</li>
-<li><p>静态、非静态函数：都被放在所有 class object 之外；（<em>解答了第一章第一个疑问点</em>）</p>
-</li>
-<li><p>虚函数：</p>
-<p> 1、每一个 class 产生出一堆指向 virtual functions 的指针，放在表格之中，这个表格被称为 <strong>virtual table(vtbl)</strong>.  </p>
-<p>2、<strong>每一个 class object被添加一个指针，指向相关的virtual table 。通常这个指针被称为 vptr ，vptr的设定和重置都由每一个 class 的 constructor 、destructor 和 copy assignment 运算符自动完成。</strong></p>
-</li>
-</ul>
-<p><img src="https://upload-images.jianshu.io/upload_images/16713773-41e96c6a2675700a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="img"></p>
-<h3 id="加上继承后的C-对象模型（3-4节有讨论）"><a href="#加上继承后的C-对象模型（3-4节有讨论）" class="headerlink" title="加上继承后的C++对象模型（3.4节有讨论）"></a>加上继承后的C++对象模型（3.4节有讨论）</h3><p>作者有几种想法，其中一种是下图：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/16713773-960ad729be8c5d90.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="img"></p>
-<p><u>在虚拟继承的情况下</u><u>，基类（如上图ios类）不管在继承串链中被派生多少次，永远只会存在一个实例。</u></p>
-<h2 id="1-2-关键词所带来的差异"><a href="#1-2-关键词所带来的差异" class="headerlink" title="1.2 关键词所带来的差异"></a>1.2 关键词所带来的差异</h2><p>讲关于Struct与Class之间的故事。</p>
-<h2 id="1-3-对象的差异"><a href="#1-3-对象的差异" class="headerlink" title="1.3 对象的差异"></a>1.3 对象的差异</h2><h4 id="C-支持三种程序设计范式："><a href="#C-支持三种程序设计范式：" class="headerlink" title="C++支持三种程序设计范式："></a>C++支持三种程序设计范式：</h4><ul>
-<li><p>程序模型（如C语言）；</p>
-</li>
-<li><p>抽象数据类型模型（ADT）；</p>
-<p>​    使用的是一个固定而单一的类型的实例，这个实例在编译时期就完全定义好了。</p>
-</li>
-<li><p>面向对象模型（OO）（多态）；</p>
-<p>​    只有通过<strong>指针</strong>或者<strong>引用</strong>的间接处理，才支持OO程序设计所需的多态性质。因为被指定的object的真实类型在每一个特定执行点之前，是无法解析的。</p>
-</li>
-</ul>
-<h4 id="C-以下列方法支持多态："><a href="#C-以下列方法支持多态：" class="headerlink" title="C++ 以下列方法支持多态："></a>C++ 以下列方法支持多态：</h4><ol>
-<li><p>经由一组隐含的转化操作。例如<strong>把一个子类指针转换为一个指向其 public基类的指针</strong>；</p>
-<p>如：<code>shape *ps = new circle();</code></p>
-</li>
-<li><p>经由 virtual function 机制；</p>
-</li>
-<li><p>经由dynamic_cast和typied运算符；</p>
-</li>
-</ol>
-<p>多态的主要用途是经由<strong>一个共同的接口</strong>来影响类型的封装，这个接口通常被定义<strong>在一个抽象的基类中</strong>。这个共享接口是<strong>以虚函数机制引发</strong>的，它可以<strong>在执行期</strong>根据object的真正类型解析出到底是哪一个函数实例被调用。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">rotate</span><span class="params">(X datum, <span class="keyword">const</span> X *pointer, <span class="keyword">const</span> X &amp;reference)</span></span>&#123;</span><br><span class="line">    <span class="comment">//在执行期以前，无法确定到底调用了哪一个rotate实例</span></span><br><span class="line">    (*pointer).rotate();</span><br><span class="line">    reference.rotate();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//总是调用datum中的rotate，不管datum中的rotate是否为虚函数</span></span><br><span class="line">    datum.rotate();</span><br><span class="line">&#125;</span><br><span class="line">main()&#123;</span><br><span class="line">    Z z;	<span class="comment">//Z是X的一个子类</span></span><br><span class="line">    </span><br><span class="line">    rotate(z,&amp;z,z);	<span class="comment">//pointer和reference的函数调用会被动态完成，在这里都调用Z::rotate()</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="一个class-object-需要多少内存"><a href="#一个class-object-需要多少内存" class="headerlink" title="一个class object 需要多少内存"></a>一个class object 需要多少内存</h4><ol>
-<li>其<strong>非静态数据成员的总和</strong>大小；</li>
-<li>加上任何由于<strong>边界调整</strong>的需求而填补上去的空间，可能存在于members之间，也可能存在于集合体的边界；</li>
-<li>加上为了支持 virtual 而由内部产生的任何额外负担，vptr等；</li>
-</ol>
-<h4 id="指针类型"><a href="#指针类型" class="headerlink" title="指针类型"></a>指针类型</h4><p>一个指向ZoomAnimal的指针是如何与一个指向整数的指针不同？</p>
-<p>从内存上看，没有不同！一个指针，不管它指向哪一种数据类型，指针本身所需的内存大小是固定的。</p>
-<p><strong>而是，“指针类型”会指导编译器如何解析某个特定地址中的内存内容及其大小。</strong></p>
-<h4 id="加上多态以后的指针类型"><a href="#加上多态以后的指针类型" class="headerlink" title="加上多态以后的指针类型"></a>加上多态以后的指针类型</h4><p>假设Bear object放在地址1000处，一个Bear指针和一个ZoomAnimal有什么不同？</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Bear b;</span><br><span class="line">ZoomAnimal *pz = &amp;b;</span><br><span class="line">Bear *pb = &amp;b;</span><br></pre></td></tr></table></figure>
-<p>如图（图中两个指针都是Bear，但可假设其中一个为ZoomAnimal）：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/16713773-69e348f802a44eac.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/753/format/webp" alt="img"></p>
-<p>它们每一个都指向Bear object的第一个byte。其间的差别是，<strong>pb所涵盖的地址包含整个Bear object，而pz所涵盖的地址只包含Bear object中的ZoomAnimal subobject。</strong></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Bear b;</span><br><span class="line">ZoomAnimal za = b;		<span class="comment">//这个引起切割</span></span><br></pre></td></tr></table></figure>
-<p>当一个基类对象被初始化为一个子类对象，那么子类对象就会被切割以塞入较小的base type内存中，多态于是不再呈现。</p>
-<p>​    </p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">深度探索C++对象模型-学习总结</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2019/03/18/深度探索C-对象模型-第一章/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
@@ -1919,6 +2058,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">深度探索C++对象模型-学习总结</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">Linux学习总结</a>
               </li>
             
             <div class="clearfix"></div>

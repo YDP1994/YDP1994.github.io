@@ -6,22 +6,15 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>深度探索C++对象模型-第四章 | CodeYuan</title>
+  <title>Archives: 2019/4 | CodeYuan</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="说明： ​    不是很清楚的点，用下划线。 ​    解答，用斜体； ​    重点，用粗体加粗； 第四章 Function 语意学4.1 Member的各种调用方式1. Nonstatic Member Functions实际上编译器是将member function被内化为nonmember的形式，经过下面转化步骤：  给函数添加额外参数——this； 将对每一个nonstaitc data">
-<meta name="keywords" content="深度探索C++对象模型-学习总结">
-<meta property="og:type" content="article">
-<meta property="og:title" content="深度探索C++对象模型-第四章">
-<meta property="og:url" content="http://yoursite.com/2019/03/20/深度探索C-对象模型-第四章/index.html">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="CodeYuan">
+<meta property="og:url" content="http://yoursite.com/archives/2019/04/index.html">
 <meta property="og:site_name" content="CodeYuan">
-<meta property="og:description" content="说明： ​    不是很清楚的点，用下划线。 ​    解答，用斜体； ​    重点，用粗体加粗； 第四章 Function 语意学4.1 Member的各种调用方式1. Nonstatic Member Functions实际上编译器是将member function被内化为nonmember的形式，经过下面转化步骤：  给函数添加额外参数——this； 将对每一个nonstaitc data">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/16713773-cba40663572a77d2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:updated_time" content="2019-03-21T05:47:30.783Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="深度探索C++对象模型-第四章">
-<meta name="twitter:description" content="说明： ​    不是很清楚的点，用下划线。 ​    解答，用斜体； ​    重点，用粗体加粗； 第四章 Function 语意学4.1 Member的各种调用方式1. Nonstatic Member Functions实际上编译器是将member function被内化为nonmember的形式，经过下面转化步骤：  给函数添加额外参数——this； 将对每一个nonstaitc data">
-<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/16713773-cba40663572a77d2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta name="twitter:title" content="CodeYuan">
   
     <link rel="alternative" href="/atom.xml" title="CodeYuan" type="application/atom+xml">
   
@@ -157,275 +150,174 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-深度探索C-对象模型-第四章" class="article article-type-post " itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
+            
   
-    <h1 class="article-title" itemprop="name">
-      深度探索C++对象模型-第四章
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2019" class="archive-year">2019</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      	<div class="article-meta">
+	      	<a href="/2019/04/01/Linux线程/" class="archive-article-date">
+  	<time datetime="2019-04-01T13:05:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-01</time>
+</a>
+        </div>
+    	 
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2019/04/01/Linux线程/">Linux线程</a>
     </h1>
   
 
-        
-        <a href="/2019/03/20/深度探索C-对象模型-第四章/" class="archive-article-date">
-  	<time datetime="2019-03-20T02:26:08.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-03-20</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>说明：</p>
-<p>​    <u>不是很清楚的点</u>，用下划线。</p>
-<p>​    <em>解答</em>，用斜体；</p>
-<p>​    <strong>重点</strong>，用粗体加粗；</p>
-<h1 id="第四章-Function-语意学"><a href="#第四章-Function-语意学" class="headerlink" title="第四章 Function 语意学"></a>第四章 Function 语意学</h1><h2 id="4-1-Member的各种调用方式"><a href="#4-1-Member的各种调用方式" class="headerlink" title="4.1 Member的各种调用方式"></a>4.1 Member的各种调用方式</h2><h3 id="1-Nonstatic-Member-Functions"><a href="#1-Nonstatic-Member-Functions" class="headerlink" title="1. Nonstatic Member Functions"></a>1. Nonstatic Member Functions</h3><p>实际上编译器是将member function被内化为nonmember的形式，经过下面转化步骤：</p>
-<ol>
-<li>给函数添加额外参数——this；</li>
-<li>将对每一个nonstaitc data member的存取操作改为this指针来存取；</li>
-<li>将member function 重写成一个外部函数。对函数名采用mangling 处理，使之成为独一无二的语汇；</li>
-</ol>
-<h3 id="2-Virtual-Member-Functions（虚成员函数）"><a href="#2-Virtual-Member-Functions（虚成员函数）" class="headerlink" title="2. Virtual Member Functions（虚成员函数）"></a>2. Virtual Member Functions（虚成员函数）</h3><p>将</p>
-<p>​    <code>ptr-&gt;f();  //f()为虚成员函数</code> </p>
-<p>内部转化为</p>
-<p>​    <code>(*ptr-&gt;vptr[1])(ptr);</code></p>
-<p>其中：</p>
-<ul>
-<li>vptr表示编译器产生的指针，指向virtual table。它被安插在<strong>每一个声明有（或继承自）</strong>一个或多个virtual functions 的class object 中。</li>
-<li>1 是virtual table slot的索引值，关联到normalize()函数。</li>
-<li>第二个ptr表示this指针。</li>
-</ul>
-<h3 id="3-Static-Member-Functions-（静态成员函数）"><a href="#3-Static-Member-Functions-（静态成员函数）" class="headerlink" title="3. Static Member Functions （静态成员函数）"></a>3. Static Member Functions （静态成员函数）</h3><p>Static Member Functions的主要特性就是<strong>它没有this指针</strong></p>
-<p>次要特性：</p>
-<ul>
-<li>不能被声明为const、volatile、virtual；</li>
-<li>不能够直接存取其class中的非静态数据成员；</li>
-</ul>
-<p>Static Member Functions由于缺乏this指针，因此<strong>差不多等同于非成员函数</strong>。</p>
-<p>如果取一个static member function 的地址，获得的是其在内存的位置（也就是地址），而不是一个指向“class member function”的指针，如下：</p>
-<p><code>&amp;Point::count();</code> </p>
-<p>会得到一个数值，类型是：</p>
-<p><code>unsigned int(*)();</code></p>
-<p>而不是：</p>
-<p><code>unsigned int(Point::*)();</code></p>
-<h2 id="4-2-Virtual-Member-Functions"><a href="#4-2-Virtual-Member-Functions" class="headerlink" title="4.2 Virtual Member Functions"></a>4.2 Virtual Member Functions</h2><p><strong>C++中，多态表示以“一个public base class 的指针（或reference)，寻址出一个derived class object”。</strong></p>
-<p>为了在执行期调用正确的虚函数，在编译时期：</p>
-<ul>
-<li>可以在每一个多态的class object身上增加两个members：</li>
-</ul>
-<ol>
-<li>一个字符串或数字，表示class的类型；</li>
-<li>一个指针vptr，指向某一个表格，表格中持有程序的虚函数们的执行期地址；</li>
-</ol>
-<ul>
-<li>每一个虚函数都被指派一个表格索引值；</li>
-</ul>
-<p>那么，<strong>表格中的虚函数们地址如何被购建起来？</strong></p>
-<p>在C++中，虚函数们可经由其class object被调用，可以在编译时期获知。此外，这一组地址是固定不变的，执行期不可能新增或替换之。<strong>由于程序执行时，表格的大小和内容都不会改变，所以其建构和存取皆可以由编译器完全掌控。不需要<em>执行期</em>的任何介入。</strong></p>
-<p>而<strong>执行期要做的</strong>，只是在特定的虚函数表slot中激活虚函数。</p>
-<hr>
-<p>每一个class 只会有一个virtual table，每一个table 含有对应的class object中所有active virtual functions 函数实体地址。这些active virtual function 包括：</p>
-<ol>
-<li>这个class 所定义的函数实体（包括<strong>改写一个可能存在的base class virtual function函数实体</strong>）。</li>
-<li>继承自base class 的函数实体（不被derived class改写）</li>
-<li>一个pure_virtual_called()。</li>
-</ol>
-<p>继承过程中，virtual table的三种可能性：</p>
-<ol>
-<li>继承base class 所声明的virtual functions的函数实体。正确地说，是该函数实体的<strong>地址会被拷贝</strong>到derived class的virtual table相对应的slot之中。</li>
-<li>使用自己的函数实体。这表示它自己的函数实体地址必须放在对应的slot之中。</li>
-<li>可以加入一个新的virtual function。这时候virtual table 的尺寸会增大一个slot放进这个函数实体地址。</li>
-</ol>
-<p>编译时期设定virtual function的调用：</p>
-<p><code>ptr-&gt;z();</code></p>
-<ul>
-<li>一般而言，我并不知道ptr 所指对象的真正类型。<strong>然而可以经由ptr 可以存取到该对象的virtual table。</strong></li>
-<li>虽然我不知道哪个Z()函数实体被调用，<strong>但知道每一个Z()函数地址都被放置某一个slot（如slot 4）的索引。</strong></li>
-</ul>
-<p>这样我们就可以将</p>
-<p><code>ptr-&gt;z();</code></p>
-<p>转化为：</p>
-<p><code>（*ptr-&gt;vptr[4])(ptr);</code></p>
-<p><strong>唯一一个在执行期才能知道的东西是：slot4所指的到底是哪一个class object的z()函数实体。</strong></p>
-<h3 id="多重继承下的-Virtual-Functions"><a href="#多重继承下的-Virtual-Functions" class="headerlink" title="多重继承下的 Virtual Functions"></a>多重继承下的 Virtual Functions</h3><p>在多重继承中支持virtual functions，其复杂度围绕在第二个及其后面的base class 上，以及“必须在执行期调整this 指针”这一点。</p>
-<p>一般规则是，经由指向“第二或后继base class 的指针”来调用derived class virtual function。调用操作连带的“必要的this指针调整”操作，必须<strong>在执行期</strong>完成。</p>
-<p>在多重继承下，一个派生类内含<code>n-1</code>个额外的虚函数表，<code>n</code>表示其上一层基类的个数（因此，单一继承将不会有额外的虚函数表）。【若是双重继承，那么就会<strong>有一个与派生类共享的虚函数表</strong>】</p>
-<p>如下图：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/16713773-cba40663572a77d2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="4-2.png"></p>
-<p>【注】</p>
-<ul>
-<li>base1的虚函数表是主要表格，base2的是次要表格；</li>
-<li>函数后面有加*，表示这不是真实的函数实例，是需要加this指针指向真正的函数实例。</li>
-</ul>
-<h2 id="4-3-函数的效能"><a href="#4-3-函数的效能" class="headerlink" title="4.3 函数的效能"></a>4.3 函数的效能</h2><p>non-member、static member或non-static member函数都被转换为完全相同形式，所以三者效率完全相同。</p>
-<h2 id="4-4-指向Member-Function的指针"><a href="#4-4-指向Member-Function的指针" class="headerlink" title="4.4 指向Member Function的指针"></a>4.4 指向Member Function的指针</h2><p>取一个non-static data member的地址，得到的结果是该member在class 布局中的bytes位置（再加1），所以它<strong>需要绑定于</strong>某个class object的地址上，才能够被存取。</p>
-<p>取一个non-static member function的地址，如果该函数是non-virtual，则得到的是内存的真正地址，然后这个值也是不完全的，也需要绑定于某个class object的地址上，才能够调用函数。（所有的non-static member function都需要对象的地址，以参数this指出）</p>
-<h3 id="支持“指向Virtual-Member-Function”之指针"><a href="#支持“指向Virtual-Member-Function”之指针" class="headerlink" title="支持“指向Virtual Member Function”之指针"></a>支持“指向Virtual Member Function”之指针</h3><p>对于一个virtual function，其地址在编译时期是未知的，所能知道的仅是virtual function在其相关之virtual table的索引值，也就是说，对于一个virtual member function 取其地址，所能获得的只是一个索引值。</p>
-<h2 id="4-5-Inline-Function"><a href="#4-5-Inline-Function" class="headerlink" title="4.5 Inline Function"></a>4.5 Inline Function</h2><h3 id="形参："><a href="#形参：" class="headerlink" title="形参："></a>形参：</h3><ul>
-<li>传入参数，直接替换；</li>
-<li>传入常量，连替换都省了，直接变成常量；</li>
-<li>传入函数运行结果，则需要导入临时变量，以避免重复求值；</li>
-</ul>
-<h3 id="局部变量："><a href="#局部变量：" class="headerlink" title="局部变量："></a>局部变量：</h3><p>一般而言，inline函数中的每一个局部变量都必须被放在函数调用的一个封闭区段中，拥有一个独一无二的名称。</p>
-<p>如果一次性调用N次，就会出现N个临时变量……程序的体积会暴增，如下：</p>
-<p><code>minval = min( val1, val2 ) + min( foo(), foo()+1 );</code></p>
-<p>因此要以分离的多个式子被调用。</p>
-
-      
-
-      
-        <div class="page-reward">
-          <a href="javascript:;" class="page-reward-btn tooltip-top">
-            <div class="tooltip tooltip-east">
-            <span class="tooltip-item">
-              赏
-            </span>
-            <span class="tooltip-content">
-              <span class="tooltip-text">
-                <span class="tooltip-inner">
-                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢支持<i class="icon icon-quo-right"></i></p>
-                  <div class="reward-box">
-                    
-                    
-                    <div class="reward-box-item">
-                      <img class="reward-img" src="/picture/wechatpay.png">
-                      <span class="reward-type">微信</span>
-                    </div>
-                    
-                  </div>
-                </span>
-              </span>
-            </span>
-          </div>
-          </a>
-        </div>
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
+        <div class="article-info info-on-right">
+          
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">深度探索C++对象模型-学习总结</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Linux学习总结</a>
         		</li>
       		
 		</ul>
 	</div>
 
-      
+          
 
-      
-
-      
-        
-<div class="share-btn share-icons tooltip-left">
-  <div class="tooltip tooltip-east">
-    <span class="tooltip-item">
-      <a href="javascript:;" class="share-sns share-outer">
-        <i class="icon icon-share"></i>
-      </a>
-    </span>
-    <span class="tooltip-content">
-      <div class="share-wrap">
-        <div class="share-icons">
-          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
-            <i class="icon icon-weibo"></i>
-          </a>
-          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
-            <i class="icon icon-weixin"></i>
-          </a>
-          <a class="qq share-sns" href="javascript:;" data-type="qq">
-            <i class="icon icon-qq"></i>
-          </a>
-          <a class="douban share-sns" href="javascript:;" data-type="douban">
-            <i class="icon icon-douban"></i>
-          </a>
-          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
-            <i class="icon icon-qzone"></i>
-          </a>
-          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
-            <i class="icon icon-facebook"></i>
-          </a>
-          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
-            <i class="icon icon-twitter"></i>
-          </a>
-          <a class="google share-sns" href="javascript:;" data-type="google">
-            <i class="icon icon-google"></i>
-          </a>
         </div>
-      </div>
-    </span>
-  </div>
-</div>
-
-<div class="page-modal wx-share js-wx-box">
-    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
-    <p>扫一扫，分享到微信</p>
-    <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2019/03/20/深度探索C-对象模型-第四章/" alt="微信分享二维码">
-    </div>
-</div>
-
-<div class="mask js-mask"></div>
-      
-      <div class="clearfix"></div>
-    </div>
+        <div class="clearfix"></div>
+    </header>
   </div>
 </article>
-
   
-<nav id="article-nav">
-  
-    <a href="/2019/03/22/深度探索C-对象模型-第五章/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          深度探索C++对象模型-第五章
-        
-      </div>
-    </a>
-  
-  
-    <a href="/2019/03/19/深度探索C-对象模型-第三章/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">深度探索C++对象模型-第三章</div>
-      <i class="icon-circle-right"></i>
-    </a>
-  
-</nav>
-
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
+    
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      	<div class="article-meta">
+	      	<a href="/2019/04/01/Linux进程间通信2/" class="archive-article-date">
+  	<time datetime="2019-04-01T03:31:34.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-01</time>
+</a>
         </div>
-        
-        
-    </div>
-</aside>
-
-
-
+    	 
   
-  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2019/04/01/Linux进程间通信2/">Linux进程间通信2</a>
+    </h1>
   
 
+        <div class="article-info info-on-right">
+          
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Linux学习总结</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+          
+
+        </div>
+        <div class="clearfix"></div>
+    </header>
+  </div>
+</article>
+  
+    
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      	<div class="article-meta">
+	      	<a href="/2019/04/01/Linux之IO操作/" class="archive-article-date">
+  	<time datetime="2019-04-01T02:47:55.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-01</time>
+</a>
+        </div>
+    	 
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2019/04/01/Linux之IO操作/">Linux之IO操作</a>
+    </h1>
   
 
+        <div class="article-info info-on-right">
+          
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Linux学习总结</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+          
+
+        </div>
+        <div class="clearfix"></div>
+    </header>
+  </div>
+</article>
+  
+    
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      	<div class="article-meta">
+	      	<a href="/2019/04/01/Linux进程间通信/" class="archive-article-date">
+  	<time datetime="2019-04-01T02:47:40.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-01</time>
+</a>
+        </div>
+    	 
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2019/04/01/Linux进程间通信/">Linux进程间通信1</a>
+    </h1>
   
 
+        <div class="article-info info-on-right">
+          
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Linux学习总结</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+          
+
+        </div>
+        <div class="clearfix"></div>
+    </header>
+  </div>
+</article>
   
+  
+    </div></section>
+  
+
+    
 
 
           </div>
@@ -455,8 +347,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: true,
-		isArchive: false,
+		isPost: false,
+		isArchive: true,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,

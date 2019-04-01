@@ -6,21 +6,24 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>CodeYuan</title>
+  <title>Linux进程间通信2 | CodeYuan</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="IO操作文件IO操作函数1.write(int fd, void *buf, size_t count)  写成功后，fd会调整；  若fd参数为1，则直接显示到屏幕；   2.read(int fd, void * buf, size_t count)  注意需要调整fd指针  3.lseek(int fd, off_t offset, int whence)  第二个参数：偏移量，每一读写操作">
+  <meta name="description" content="[TOC] 内存模型 要使用一块共享内存  进程必须首先分配它 随后须要訪问这个共享内存块的每一个进程都必须将这个共享内存绑定到自己的地址空间中 当完毕通信之后，全部进程都将脱离共享内存，而且由一个进程释放该共享内存块  在/proc/sys/kernel/文件夹下，记录着共享内存的一些限制，如一个共享内存区的最大字节数shmmax。系统范围内最大共享内存区标识符数shmmni等，能够手工对其调整">
+<meta name="keywords" content="Linux学习总结">
 <meta property="og:type" content="article">
-<meta property="og:title" content="CodeYuan">
-<meta property="og:url" content="http://yoursite.com/2019/03/29/Linux嵌入式笔记/index.html">
+<meta property="og:title" content="Linux进程间通信2">
+<meta property="og:url" content="http://yoursite.com/2019/04/01/Linux进程间通信2/index.html">
 <meta property="og:site_name" content="CodeYuan">
-<meta property="og:description" content="IO操作文件IO操作函数1.write(int fd, void *buf, size_t count)  写成功后，fd会调整；  若fd参数为1，则直接显示到屏幕；   2.read(int fd, void * buf, size_t count)  注意需要调整fd指针  3.lseek(int fd, off_t offset, int whence)  第二个参数：偏移量，每一读写操作">
+<meta property="og:description" content="[TOC] 内存模型 要使用一块共享内存  进程必须首先分配它 随后须要訪问这个共享内存块的每一个进程都必须将这个共享内存绑定到自己的地址空间中 当完毕通信之后，全部进程都将脱离共享内存，而且由一个进程释放该共享内存块  在/proc/sys/kernel/文件夹下，记录着共享内存的一些限制，如一个共享内存区的最大字节数shmmax。系统范围内最大共享内存区标识符数shmmni等，能够手工对其调整">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="https://images0.cnblogs.com/blog2015/757743/201507/200958340668111.png">
-<meta property="og:updated_time" content="2019-03-31T12:17:23.332Z">
+<meta property="og:image" content="http://img.blog.csdn.net/20160329144506913">
+<meta property="og:image" content="http://img.blog.csdn.net/20160329150948757">
+<meta property="og:image" content="http://img.blog.csdn.net/20160329155902306">
+<meta property="og:updated_time" content="2019-04-01T13:07:31.911Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="CodeYuan">
-<meta name="twitter:description" content="IO操作文件IO操作函数1.write(int fd, void *buf, size_t count)  写成功后，fd会调整；  若fd参数为1，则直接显示到屏幕；   2.read(int fd, void * buf, size_t count)  注意需要调整fd指针  3.lseek(int fd, off_t offset, int whence)  第二个参数：偏移量，每一读写操作">
-<meta name="twitter:image" content="https://images0.cnblogs.com/blog2015/757743/201507/200958340668111.png">
+<meta name="twitter:title" content="Linux进程间通信2">
+<meta name="twitter:description" content="[TOC] 内存模型 要使用一块共享内存  进程必须首先分配它 随后须要訪问这个共享内存块的每一个进程都必须将这个共享内存绑定到自己的地址空间中 当完毕通信之后，全部进程都将脱离共享内存，而且由一个进程释放该共享内存块  在/proc/sys/kernel/文件夹下，记录着共享内存的一些限制，如一个共享内存区的最大字节数shmmax。系统范围内最大共享内存区标识符数shmmni等，能够手工对其调整">
+<meta name="twitter:image" content="http://img.blog.csdn.net/20160329144506913">
   
     <link rel="alternative" href="/atom.xml" title="CodeYuan" type="application/atom+xml">
   
@@ -156,349 +159,256 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-Linux嵌入式笔记" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-Linux进程间通信2" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Linux进程间通信2
+    </h1>
+  
+
+        
+        <a href="/2019/04/01/Linux进程间通信2/" class="archive-article-date">
+  	<time datetime="2019-04-01T03:31:34.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-04-01</time>
+</a>
+        
+      </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="IO操作"><a href="#IO操作" class="headerlink" title="IO操作"></a>IO操作</h1><h2 id="文件IO操作函数"><a href="#文件IO操作函数" class="headerlink" title="文件IO操作函数"></a>文件IO操作函数</h2><p><strong>1.write(int fd, void *buf, size_t count)</strong></p>
+        <p>[TOC]</p>
+<h1 id="内存模型"><a href="#内存模型" class="headerlink" title="内存模型"></a>内存模型</h1><hr>
+<p>要使用一块<strong>共享内存</strong></p>
 <ul>
-<li><p>写成功后，fd会调整；</p>
-</li>
-<li><p>若fd参数为1，则直接显示到屏幕；</p>
-</li>
+<li>进程必须首先<strong>分配</strong>它</li>
+<li>随后须要<strong>訪问这个共享内存块的每一个进程都必须将这个共享内存绑定到自己的地址空间中</strong></li>
+<li>当完毕通信之后，全部进程都将<strong>脱离共享内存</strong>，而且由一个进程<strong>释放该共享内存块</strong></li>
 </ul>
-<p><strong>2.read(int fd, void * buf, size_t count)</strong></p>
+<p>在<code>/proc/sys/kernel/</code>文件夹下，记录着共享内存的一些限制，如一个共享内存区的最大字节数<code>shmmax</code>。系统范围内最大共享内存区标识符数<code>shmmni</code>等，能够手工对其调整，但不推荐这样做。</p>
+<p><img src="http://img.blog.csdn.net/20160329144506913" alt="这里写图片描写叙述"></p>
+<p>理解 Linux 系统内存模型能够有助于解释这个绑定的过程。</p>
+<h2 id="linux系统内存模型"><a href="#linux系统内存模型" class="headerlink" title="linux系统内存模型"></a>linux系统内存模型</h2><hr>
+<p>在 Linux 系统中。每一个进程的虚拟内存是被分为很多页面的。这些内存页面中包含了实际的数据。</p>
+<p>每一个进程都会维护一个从内存地址到虚拟内存页面之间的映射关系。虽然每一个进程都有自己的内存地址，但不同的进程能够同一时候将同一个内存页面映射到自己的地址空间中。从而达到共享内存的目的。</p>
+<p>分配一个新的共享内存块会创建新的内存页面。由于全部进程都希望共享对同一块内存的訪问。仅仅应由一个进程创建一块新的共享内存。再次分配一块已经存在的内存块不会创建新的页面，而仅仅是会返回一个标识该内存块的标识符。</p>
+<p>一个进程如需使用这个共享内存块，则首先须要将它绑定到自己的地址空间中。</p>
+<p>这样会创建一个从进程本身虚拟地址到共享页面的映射关系。当对共享内存的使用结束之后，这个映射关系将被删除。</p>
+<p>当再也没有进程须要使用这个共享内存块的时候，必须有一个（且仅仅能是一个）进程负责释放这个被共享的内存页面。</p>
+<p>全部共享内存块的大小都必须是系统页面大小的整数倍。系统页面大小指的是系统中单个内存页面包括的字节数。在 Linux 系统中，内存页面大小是4KB。只是您仍然应该通过调用 getpagesize 获取这个值。</p>
+<blockquote>
+<p>共享内存的实现分为两个步骤：</p>
 <ul>
-<li>注意需要调整fd指针</li>
+<li>创建共享内存，使用shmget函数。</li>
+<li>映射共享内存。将这段创建的共享内存映射到详细的进程空间去，使用shmat函数。</li>
 </ul>
-<p><strong>3.lseek(int fd, off_t offset, int whence)</strong></p>
-<ul>
-<li><p>第二个参数：偏移量，每一读写操作所需要移动的距离，单位是字节的数量，可正可负（向前移、向后移）</p>
-</li>
-<li><p>第三个参数：当前位置的基点</p>
-<ol>
-<li><p>SEEK_SET：当前位置为文件的揩油，新位置为偏移量的大小；</p>
-</li>
-<li><p>SEEK_CUR：当前为文件指针的位置，新位置为当前位置加上偏移量；</p>
-</li>
-<li><p>SEEK_END：当前位置为文件的结尾，新位置为文件的大小加上偏移量的大小</p>
-</li>
-</ol>
-</li>
-<li><p>返回值：当前文件的位置指针值</p>
-</li>
-</ul>
-<h2 id="标准IO操作函数"><a href="#标准IO操作函数" class="headerlink" title="标准IO操作函数"></a>标准IO操作函数</h2><p>三个缓存，从上至下，从外到内：</p>
-<ul>
-<li>用户缓存；如自己定义的buf[]</li>
-<li>库缓存；如printf()，遇到<u>/n</u>，或者<u>写满</u>时，才会写到内核缓存中。</li>
-<li>内核缓存；每打开一个文件，就有一个库缓存</li>
-</ul>
+</blockquote>
+<h2 id="用于共享内存的函数"><a href="#用于共享内存的函数" class="headerlink" title="用于共享内存的函数"></a>用于共享内存的函数</h2><hr>
+<p>共享内存的使用。主要有下面几个API：<code>ftok()</code>、<code>shmget()</code>、<code>shmat()</code>、<code>shmdt()</code>及<code>shmctl()</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/shm.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">shmat</span><span class="params">(<span class="keyword">int</span> shm_id, <span class="keyword">const</span> <span class="keyword">void</span> *shm_addr, <span class="keyword">int</span> shmflg)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">shmctl</span><span class="params">(<span class="keyword">int</span> shm_id, <span class="keyword">int</span> cmd, struct shmid_ds *buf)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">shmdt</span><span class="params">(<span class="keyword">const</span> <span class="keyword">void</span> *shm_addr)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">shmget</span><span class="params">(<span class="keyword">key_t</span> key, <span class="keyword">size_t</span> size, <span class="keyword">int</span> shmflg)</span></span>;</span><br></pre></td></tr></table></figure>
+<p><img src="http://img.blog.csdn.net/20160329150948757" alt="这里写图片描写叙述"></p>
+<p>与信号量相相似，通常须要在包括shm.h文件之前包括sys/types.h与sys/ipc.h这两个头文件。</p>
+<h2 id="用ftok-函数获得一个ID号"><a href="#用ftok-函数获得一个ID号" class="headerlink" title="用ftok()函数获得一个ID号"></a>用ftok()函数获得一个ID号</h2><hr>
+<p>应用说明，在IPC中，我们经经常使用用key_t的值来创建或者打开信号量，共享内存和消息队列。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">key_t</span> ftok(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">int</span> proj_id);</span><br></pre></td></tr></table></figure>
 <table>
 <thead>
 <tr>
-<th>文件IO</th>
-<th>标准IO</th>
+<th>參数</th>
+<th>描写叙述</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>open</td>
-<td>fopen</td>
+<td>pathname</td>
+<td>一定要在系统中存在而且进程能够訪问的</td>
 </tr>
 <tr>
-<td>close</td>
-<td>fclose</td>
-</tr>
-<tr>
-<td>lseek</td>
-<td>fseek,rewind</td>
-</tr>
-<tr>
-<td>read</td>
-<td>读写函数比较多（分为全缓存、行缓存、无缓存）</td>
-</tr>
-<tr>
-<td>write</td>
+<td>proj_id</td>
+<td>一个1－255之间的一个整数值，典型的值是一个ASCII值。</td>
 </tr>
 </tbody>
 </table>
-<p><strong>三类读写函数：</strong></p>
-<p>第一类：行缓存，遇到换行符（\n）或写满缓存即调用系统调用函数</p>
+<blockquote>
+<p>当成功运行的时候，一个key_t值将会被返回。否则－1被返回。我们能够使用strerror(errno)来确定详细的错误信息。</p>
+</blockquote>
+<p>考虑到应用系统可能在不同的主机上应用，能够直接定义一个key，而不用ftok获得：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IPCKEY 0x344378</span></span><br></pre></td></tr></table></figure>
+<h2 id="创建共享内存"><a href="#创建共享内存" class="headerlink" title="创建共享内存"></a>创建共享内存</h2><hr>
+<p>进程通过调用shmget（Shared Memory GET，获取共享内存）来分配一个共享内存块。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">shmget</span><span class="params">(<span class="keyword">key_t</span> key ,<span class="keyword">int</span> size,<span class="keyword">int</span> shmflg)</span></span></span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>參数</th>
+<th>描写叙述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>key</td>
+<td>一个用来标识共享内存块的键值</td>
+</tr>
+<tr>
+<td>size</td>
+<td>指定了所申请的内存块的大小</td>
+</tr>
+<tr>
+<td>shmflg</td>
+<td>操作共享内存的标识</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>返回值：假设成功，返回共享内存表示符，假设失败，返回-1。</p>
+</blockquote>
 <ul>
-<li>读：fgets，gets，printf，fprintf，sprintf</li>
-<li>写：fputs，puts，scanf</li>
+<li>该函数的第一个參数key是一个用来标识共享内存块的键值。</li>
 </ul>
-<p>第二类：无缓存，只要用户调用这个函数，就会将其内容写到内核中</p>
-<p>第三类：全缓存，只要写满缓存再调用系统调用函数</p>
+<p>彼此无关的进程能够通过指定同一个键以获取对同一个共享内存块的訪问。</p>
+<p>不幸的是，其他程序也可能挑选了相同的特定值作为自己分配共享内存的键值。从而产生冲突。</p>
+<p>用特殊常量IPC_PRIVATE作为键值能够保证系统建立一个全新的共享内存块。IPC_PRIVATE常用于父子进程间通信。</p>
+<p>key标识共享内存的键值：0/IPC_PRIVATE。当key的取值为IPC_PRIVATE,则函数shmget将创建一块新的共享内存；假设key的取值为0。而參数中又设置了IPC_PRIVATE这个标志，则相同会创建一块新的共享内存。</p>
 <ul>
-<li>读：fread</li>
-<li>写：fwrite</li>
+<li>该函数的第二个參数size指定了所申请的内存块的大小。如128</li>
 </ul>
-<p><strong>1.FILE <em>fopen(const char </em>path, const char *mode)</strong></p>
+<p>由于这些内存块是以页面为单位进行分配的。实际分配的内存块大小将被扩大到页面大小的整数倍。</p>
 <ul>
-<li>返回值：文件流指针 FILE*<ol>
-<li>标准输入流：stdin 0</li>
-<li>标准输出流：stdout 1</li>
-<li>标准出错流：stderr 2</li>
-</ol>
-</li>
-<li>mode：读写模式</li>
-<li>可以创建一个文件</li>
+<li>第三个參数shmflg是一组标志。通过特定常量的按位或操作来shmget。这些特定常量包括：</li>
 </ul>
-<p><strong>2.char <em>fgets(char </em>s, int size, FILE *stream)</strong></p>
-<ul>
-<li>第一个参数：缓存，读到哪</li>
-<li>第二个参数：赌多少个字节</li>
-<li>第三个参数：从什么地方读，可以从标准输入读，也可以从文件读</li>
-<li>返回值：成功为s（缓存地址），若到了文件尾端或出错为NULL</li>
-<li>fgets函数，会把回车也捕获；而gets函数不会，但gets有bug，所以用fgets</li>
-</ul>
-<p><strong>3.int fputs(const char <em>s, FILE </em>stream)</strong></p>
-<ul>
-<li>第一个参数：缓存，写什么内容</li>
-<li>第二个参数：写到哪，可以写到屏幕也可以写到文件</li>
-<li>返回值：成功则非负值，出错则为EOF（-1）</li>
-</ul>
-<p><strong>4.fflush(FILE *fp)</strong></p>
-<ul>
-<li>会强制把用户缓存写到内核中，不需要等到/n或者写满</li>
-<li>fclose(FILE *fp)里包含fflush</li>
-</ul>
-<p><strong>5.fseek(FILE *fd, off_t offset, int whence)</strong></p>
-<ul>
-<li>第二个参数：偏移量，每一读写操作所需要移动的距离，单位是字节的数量，可正可负（向前移、向后移）</li>
-<li>第三个参数：当前位置的基点<ol>
-<li>SEEK_SET：当前位置为文件的开头，新位置为偏移量的大小；</li>
-<li>SEEK_CUR：当前为文件指针的位置，新位置为当前位置加上偏移量；</li>
-<li>SEEK_END：当前位置为文件的结尾，新位置为文件的大小加上偏移量的大小</li>
-</ol>
-</li>
-<li>返回值：成功返回0，失败返回-1；</li>
-</ul>
-<p><strong>6.rewind(FILE *fd)</strong></p>
-<ul>
-<li>功能等价于（void）fseek(fp,0,SEEK_SET)；回到文件开头处，较常用</li>
-</ul>
-<p><strong>7.fprintf、printf、sprintf</strong></p>
-<ul>
-<li><p>int fprintf(FILE *stream,“字符串格式”)</p>
-<ol>
-<li><p>fprintf可以输出到文件中，也可以输出到显示器stdout</p>
-</li>
-<li><p>printf只能输出到显示器中</p>
-</li>
-</ol>
-</li>
-<li><p>int sprintf(str *,“字符串格式”)，输出内容到一个字符串中</p>
-</li>
-</ul>
-<p><strong>8.一个字符读写函数fgetc和fputc</strong></p>
-<ul>
-<li>int fgetc(FILE *fp)<ol>
-<li>返回值：正确为读取的字符，出错为EOF</li>
-</ol>
-</li>
-<li>int fputc(int c,FILE *fp)<ol>
-<li>返回值：正确为输出的字符，出错为EOF</li>
-<li>有缓存，但不是行缓存，可以用fflush刷新输出。</li>
-</ol>
-</li>
-</ul>
-<p><strong>9.判断EOF返回值是读写到了尾端还是读写出错？feof、ferror、clearerr</strong></p>
-<ul>
-<li>int feof(FILE *stream)<ol>
-<li>判断是否结束</li>
-<li>返回值：文件结束，返回非0，未结束返回0</li>
-</ol>
-</li>
-<li>int ferror(FILE *stream)<ol>
-<li>判断是否读写出错</li>
-<li>返回值：文件出错，返回非0，未出错返回0</li>
-</ol>
-</li>
-<li>void clearerr(FILE *stream)<ol>
-<li>清除流错误</li>
-</ol>
-</li>
-</ul>
-<p><strong>10.全缓存两个函数：fread和fwrite</strong></p>
-<p>size_t fread(void <em>prt, size_t size, size_t nmemb, FILE </em>stream)</p>
-<p>size_t fwrite(const void <em>prt, size_t size, size_t nmemb, FILE </em>stream)</p>
-<p>功能：全缓存的读写函数</p>
-<ul>
-<li>第一个参数：buf，写的内容</li>
-<li>第二个参数：size，写的内容中，每一个单元所占的字节数</li>
-<li>第三个参数：nmemb，一共有多少个单元数</li>
-<li>第四个参数：stream，写到哪里去</li>
-<li>一共写多少个字节，size*nmemb。就像malloc中要指定大小一样</li>
-<li>返回值：实际读写的单元数</li>
-</ul>
-<h2 id="目录IO操作函数"><a href="#目录IO操作函数" class="headerlink" title="目录IO操作函数"></a>目录IO操作函数</h2><p>需要包含dirent.h头文件</p>
-<p><strong>1.DIR <em>opendir(const char </em>pathname)</strong></p>
-<ul>
-<li>参数：打开的目录以及路径</li>
-<li>返回值：成功返回目录流指针，出错返回NULL</li>
-</ul>
-<p><strong>2.int close(DIR *dr)</strong></p>
-<p><strong>3.int mkdir(const char *path, mode_t mode)</strong></p>
-<ul>
-<li>mode：为该目录的访问权限（权限都与umask有关）</li>
-<li>返回值：创建成功返回0，否则返回-1</li>
-</ul>
-<p><strong>4.struct dirent <em>readdir(DIR </em>dr)</strong></p>
-<ul>
-<li>参数：目录流指针</li>
-<li>返回值：dirent结构体，其中主要有两个成员inode号（文件识别号）与文件名</li>
-<li>这一次只读一个文件或目录，如果想要全部读取出来，需要循环去读</li>
-</ul>
-<p><strong>5.void rewinddir(DIR *dr)</strong></p>
-<p>重新调整指针到开头，与rewind一样，不多解释</p>
-<p><strong>6.long telldir(DIR *dr)</strong></p>
-<p>告诉当前流指针的位置</p>
-<p><strong>6.long seekdir(DIR *dr)</strong></p>
-<p>也是调整指针到任意位置。与rewind一样，不多解释</p>
-<h2 id="linux下静态库和动态库（共享库）的制作与使用"><a href="#linux下静态库和动态库（共享库）的制作与使用" class="headerlink" title="linux下静态库和动态库（共享库）的制作与使用"></a>linux下静态库和动态库（共享库）的制作与使用</h2><p>Linux操作系统支持的函数库分为：</p>
-<ul>
-<li><p>静态库，libxxx.a，在编译时就将库编译进可执行程序中。</p>
-<ol>
-<li><p>优点：程序的运行环境不需要外部函数库</p>
-</li>
-<li><p>缺点：可执行程序大</p>
-</li>
-</ol>
-</li>
-<li><p>动态库，又称共享库，libxxx.so，在运行时将库加载到可执行程序中。</p>
-<ol>
-<li><p>优点：可执行程序小</p>
-</li>
-<li><p>缺点：程序的运行环境需要相应的函数库</p>
-</li>
-</ol>
-</li>
-</ul>
-<p><strong>1.静态库的制作</strong></p>
-<ul>
-<li>生成目标文件（.o文件）：gcc -c file.c</li>
-<li>静态函数库创建命令ar：ar -cr libfile.a file.o<ol>
-<li>-c：create</li>
-<li>-r：replace，已存在，则覆盖</li>
-</ol>
-</li>
-</ul>
-<p><strong>2.静态库的编译</strong></p>
-<p>输入gcc  -o  main  mian.c  -L.  -lfile  </p>
-<p>这样main.c就会把静态函数库整合进main中。</p>
-<p>-L：制定了静态函数库的位置供查找，L后面还有“.”，表示在当前目录下查找</p>
-<p>-l：指定了静态函数库名，省略了lib和.a</p>
-<p><strong>3.静态库的操作</strong></p>
-<p>如果从别处得到一个静态库libunknown.a，想知道其中包含哪些模块。</p>
-<p>命令：ar -t  libunknown.a</p>
-<p><strong>1.动态库的制作</strong></p>
-<ul>
-<li>生成目标文件（.o文件）：gcc -c file.c</li>
-<li>动态函数库创建命令：gcc  -shared  -fpic  -o libfile.so  file.o<ol>
-<li>-fpic：产生位置无关代码</li>
-<li>-shared：生成共享库</li>
-</ol>
-</li>
-</ul>
-<p><strong>2.动态库的编译</strong></p>
-<p>输入gcc  -o  out  mian.c  -L.  -lfile  </p>
-<p>这样main.c就会把动态函数库绑定进main中。</p>
-<p>【注意】此时动态函数库在使用时，会查找/usr/lib    /lib目录下的动态函数库，此时是不在里面的。</p>
-<ul>
-<li><p>第一种添加方法：.so文件放到/usr/lib    /lib目录下</p>
-</li>
-<li><p>第二种添加方法：在/etc/ld.so.conf文件里加入我们生成的库的目录，然后                           ldconfig  /etc/ld.so.conf去执行修改</p>
-<p>​        在/etc/ld.so.conf是一个非常重要的一个目录，里面存放的是链接器和加载器搜索共享库时要检查的目录，默认是从/usr/lib    /lib中读取的，所以想要顺利运行，可以把我们库的目录加入这个文件中并执行/sbin/ldconfig</p>
-</li>
-</ul>
-<p><strong>3.动态库的操作</strong></p>
-<p>如果从别处得到一个静态库libunknown.a，想知道其中包含哪些模块。</p>
-<p>命令：ar -t  libunknown.a</p>
-<h1 id="进程通信"><a href="#进程通信" class="headerlink" title="进程通信"></a>进程通信</h1><p>1.什么是进程间通信</p>
-<p><strong>进程通信：在用户空间实现进程通信是不可能的，需要通过linux内核通信</strong></p>
-<p><strong>线程间通信：在用户空间就可以实现，可以通过全局变量通信</strong></p>
-<p>进程通信：fork()；子进程对父进程进行拷贝，包括pipe的文件描述符</p>
-<p>线程间通信：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_create</span><span class="params">(<span class="keyword">pthread_t</span> *tidp, <span class="keyword">const</span> <span class="keyword">pthread_attr_t</span> *attr, (<span class="keyword">void</span>*)(*start_rtn)(<span class="keyword">void</span>*), <span class="keyword">void</span> *arg)</span></span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>第一个参数为指向线程<a href="https://baike.baidu.com/item/%E6%A0%87%E8%AF%86%E7%AC%A6" target="_blank" rel="noopener">标识符</a>的<a href="https://baike.baidu.com/item/%E6%8C%87%E9%92%88" target="_blank" rel="noopener">指针</a>。</li>
-<li>第二个参数用来设置线程属性。</li>
-<li>第三个参数是线程运行函数的起始地址。</li>
-<li>最后一个参数是运行函数的参数。</li>
-</ul>
-<h2 id="有哪几种通信方式？"><a href="#有哪几种通信方式？" class="headerlink" title="有哪几种通信方式？"></a>有哪几种通信方式？</h2><p>管道通信：无名管道、有名管道（文件系统中有名）</p>
-<p>信号通信：信号通信包括：信号的发送、信号的接收、信号的处理</p>
-<p>IPC通信（内核通信）：共享内存、消息队列和信号灯</p>
-<h3 id="无名管道（文件系统中不存在这个文件节点）"><a href="#无名管道（文件系统中不存在这个文件节点）" class="headerlink" title="无名管道（文件系统中不存在这个文件节点）"></a>无名管道（文件系统中不存在这个文件节点）</h3><p>头文件unistd.h</p>
-<p>管道文件是一个<strong>特殊的文件</strong>，是由队列来实现的。</p>
-<p>在文件IO中创建一个文件或打开一个文件是由open函数来实现的，它不能创建管道文件。只能用pipe函数来创建管道</p>
-<p>函数形式：int pipe(int fd[2])</p>
-<ul>
-<li>功能：创建管道，为系统调用：</li>
-<li>参数：两个文件描述符，读端fd[0]，写端fd[1]</li>
-<li>返回值：成功0，失败-1</li>
-</ul>
-<p>【注意】</p>
-<ol>
-<li>管道是创建在内存中的，进程结束，空间释放，管道就不存在了</li>
-<li>管道中的东西，读完了就删除了</li>
-<li>如果管道中没有东西可读，则会阻塞。满了写，也会阻塞。进入睡眠状态。</li>
-</ol>
-<h3 id="有名管道（文件系统中存在这个文件节点）"><a href="#有名管道（文件系统中存在这个文件节点）" class="headerlink" title="有名管道（文件系统中存在这个文件节点）"></a>有名管道（文件系统中存在这个文件节点）</h3><p>管道文件，文件系统中存在这个文件节点，每一个文件节点都有一个inode号，不占用磁盘空间，而且这个一个特殊的文件类型：P管道类型。</p>
-<p><strong>1.int mkfifo(const char *filename, mode_t mode);</strong></p>
-<ul>
-<li>功能：创建管道文件的节点，没有在内核中创建管道。只有通过open函数打开这个文件时才会在内核空间创建管道</li>
-<li>参数：管道文件文件名，权限，创建的文件权限仍然和umask有关系。。</li>
-<li>返回值：成功0，失败-1</li>
-</ul>
-<p>或者直接$mkfifo myfifo</p>
-<h2 id="信号及信号源"><a href="#信号及信号源" class="headerlink" title="信号及信号源"></a>信号及信号源</h2><p><strong>信号本质</strong></p>
-<p>信号是在软件层次上对中断机制的一种模拟，在原理上，一个进程收到一个信号与处理器收到一个中断请求可以说是一样的。信号是异步的，一个进程不必通过任何操作来等待信号的到达，事实上，进程也不知道信号到底什么时候到达。</p>
-<p>信号是进程间通信机制中唯一的异步通信机制，可以看作是异步通知，通知接收信号的进程有哪些事情发生了。信号机制经过POSIX实时扩展后，功能更加强大，除了基本通知功能外，还可以传递附加信息。</p>
-<p><strong>信号来源</strong></p>
-<p>信号事件的发生有两个来源：硬件来源(比如我们按下了键盘或者其它硬件故障)；软件来源，最常用发送信号的系统函数是kill, raise, alarm和setitimer以及sigqueue函数，软件来源还包括一些非法运算等操作。</p>
-<h2 id="信号的种类"><a href="#信号的种类" class="headerlink" title="信号的种类"></a>信号的种类</h2><p>系统支持的所有信号如下所示：</p>
-<p><img src="https://images0.cnblogs.com/blog2015/757743/201507/200958340668111.png" alt="img"></p>
-<p>进程可以屏蔽掉大多数信号，除了SIGSTOP和SIGKILL。</p>
-<h2 id="进程对信号的响应"><a href="#进程对信号的响应" class="headerlink" title="进程对信号的响应"></a>进程对信号的响应</h2><p>进程可以通过三种方式来响应一个信号：</p>
-<p>（1）忽略信号，即对信号不做任何处理，其中，有两个信号不能忽略：SIGKILL及SIGSTOP；</p>
-<p>（2）捕捉信号。定义信号处理函数，当信号发生时，执行相应的处理函数；</p>
-<p>（3）执行缺省操作，Linux对每种信号都规定了默认操作。注意，进程对实时信号的缺省反应是进程终止。</p>
-<p>Linux究竟采用上述三种方式的哪一个来响应信号，取决于传递给相应API函数的参数。</p>
-<h2 id="信号的处理"><a href="#信号的处理" class="headerlink" title="信号的处理"></a>信号的处理</h2><p>如果进程要处理某一信号，那么就要在进程中安装该信号。安装信号主要用来确定信号值及进程针对该信号值的动作之间的映射关系，即进程将要处理哪个信号；该信号被传递给进程时，将执行何种操作。</p>
-<p>Linux主要有两个函数实现信号的安装：signal()、sigaction()。其中signal()在可靠信号系统调用的基础上实现, 是库函数。它只有两个参数，不支持信号传递信息，主要是用于前32种非实时信号的安装；而sigaction()是较新的函数（由两个系统调用实现：sys_signal以及sys_rt_sigaction），有三个参数，支持信号传递信息，主要用来与 sigqueue() 系统调用配合使用，当然，sigaction()同样支持非实时信号的安装。sigaction()优于signal()主要体现在支持信号带有参数。</p>
-<h3 id="signal"><a href="#signal" class="headerlink" title="signal"></a>signal</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">typedef</span> <span class="title">void</span> <span class="params">(*<span class="keyword">sighandler_t</span>)</span><span class="params">(<span class="keyword">int</span>)</span></span>;</span><br><span class="line">　　<span class="keyword">sighandler_t</span> signal(<span class="keyword">int</span> signum, <span class="keyword">sighandler_t</span> handler));</span><br></pre></td></tr></table></figure>
-<p> 第一个参数指定信号的值，第二个参数指定针对前面信号值的处理，可以忽略该信号（参数设为SIG_IGN）；可以采用系统默认方式处理信号(参数设为SIG_DFL)；也可以自己实现处理方式(参数指定一个函数地址)。</p>
-<p>如果signal()调用成功，返回最后一次为安装信号signum而调用signal()时的handler值；失败则返回SIG_ERR。</p>
-<h3 id="sigaction"><a href="#sigaction" class="headerlink" title="sigaction"></a>sigaction</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　int sigaction(int signum,const struct sigaction *act,struct sigaction *oldact));</span><br></pre></td></tr></table></figure>
-<p>sigaction函数用于改变进程接收到特定信号后的行为。该函数的第一个参数为信号的值，可以为除SIGKILL及SIGSTOP外的任何一个特定有效的信号（为这两个信号定义自己的处理函数，将导致信号安装错误）。第二个参数是指向结构sigaction的一个实例的指针，在结构 sigaction的实例中，指定了对特定信号的处理，可以为空，进程会以缺省方式对信号处理；第三个参数oldact指向的对象用来保存原来对相应信号的处理，可指定oldact为NULL。如果把第二、第三个参数都设为NULL，那么该函数可用于检查信号的有效性。</p>
-<p>第二个参数最为重要，其中包含了对指定信号的处理、信号所传递的信息、信号处理函数执行过程中应屏蔽掉哪些函数等等。</p>
-<h2 id="信号的发送"><a href="#信号的发送" class="headerlink" title="信号的发送"></a>信号的发送</h2><p>发送信号的主要函数有：kill()、raise()、 sigqueue()、alarm()、setitimer()以及abort()。</p>
-<h3 id="kill"><a href="#kill" class="headerlink" title="kill"></a>kill</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">int</span> <span class="title">kill</span><span class="params">(<span class="keyword">pid_t</span> pid, <span class="keyword">int</span> signo)</span></span>;</span><br></pre></td></tr></table></figure>
-<p>signo是信号值，当为0时（即空信号），实际不发送任何信号，但照常进行错误检查，因此，可用于检查目标进程是否存在，以及当前进程是否具有向目标发送信号的权限（root权限的进程可以向任何进程发送信号，非root权限的进程只能向属于同一个session或者同一个用户的进程发送信号）。</p>
-<h3 id="raise"><a href="#raise" class="headerlink" title="raise"></a>raise</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">int</span> <span class="title">raise</span><span class="params">(<span class="keyword">int</span> signo)</span></span>;</span><br></pre></td></tr></table></figure>
-<p>向进程本身发送信号，参数为即将发送的信号值。调用成功返回 0；否则，返回 -1。</p>
-<h3 id="sigqueue"><a href="#sigqueue" class="headerlink" title="sigqueue"></a>sigqueue</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">int</span> <span class="title">sigqueue</span><span class="params">(<span class="keyword">pid_t</span> pid, <span class="keyword">int</span> signo, <span class="keyword">const</span> <span class="keyword">union</span> sigval val)</span></span>;</span><br></pre></td></tr></table></figure>
-<p>sigqueue()与函数sigaction()配合使用，sigqueue的第一个参数是指定接收信号的进程ID，第二个参数确定即将发送的信号，第三个参数是一个联合数据结构union sigval，指定了信号传递的参数，即通常所说的4字节值。</p>
-<p>sigqueue()比kill()传递了更多的附加信息，但sigqueue()只能向一个进程发送信号，而不能发送信号给一个进程组。如果signo=0，将会执行错误检查，但实际上不发送任何信号，0值信号可用于检查pid的有效性以及当前进程是否有权限向目标进程发送信号。在调用sigqueue时，sigval_t指定的信息会拷贝到3参数信号处理函数（3参数信号处理函数指的是信号处理函数由 sigaction安装，并设定了sa_sigaction指针）的siginfo_t结构中，这样信号处理函数就可以处理这些信息了。由于 sigqueue系统调用支持发送带参数信号，所以比kill()系统调用的功能要灵活和强大得多。</p>
-<p>注：sigqueue()发送非实时信号时，第三个参数包含的信息仍然能够传递给信号处理函数； sigqueue()发送非实时信号时，仍然不支持排队，即在信号处理函数执行过程中到来的所有相同信号，都被合并为一个信号。</p>
-<h3 id="alarm"><a href="#alarm" class="headerlink" title="alarm"></a>alarm</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">unsigned</span> <span class="keyword">int</span> <span class="title">alarm</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> seconds)</span></span>;</span><br></pre></td></tr></table></figure>
-<p>专门为SIGALRM信号而设，在指定的时间seconds秒后，将向进程本身发送SIGALRM信号，又称为闹钟时间。进程调用alarm后，任何以前的alarm()调用都将无效。如果参数seconds为零，那么进程内将不再包含任何闹钟时间。返回值，如果调用alarm()前，进程中已经设置了闹钟时间，则返回上一个闹钟时间的剩余时间，否则返回0。</p>
-<h3 id="settimer"><a href="#settimer" class="headerlink" title="settimer"></a>settimer</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　int setitimer(int which, const struct itimerval *value, struct itimerval *ovalue));</span><br></pre></td></tr></table></figure>
-<p>setitimer()比alarm功能强大，支持3种类型的定时器：</p>
-<ul>
-<li>ITIMER_REAL： 设定绝对时间；经过指定的时间后，内核将发送SIGALRM信号给本进程；</li>
-<li>ITIMER_VIRTUAL 设定程序执行时间；经过指定的时间后，内核将发送SIGVTALRM信号给本进程；</li>
-<li>ITIMER_PROF 设定进程执行以及内核因本进程而消耗的时间和，经过指定的时间后，内核将发送ITIMER_VIRTUAL信号给本进程；</li>
-</ul>
-<p>setitimer()第一个参数which指定定时器类型（上面三种之一）；第二个参数是结构itimerval的一个实例；第三个参数可不做处理。setitimer()调用成功返回0，否则返回-1。</p>
-<h3 id="abort"><a href="#abort" class="headerlink" title="abort"></a>abort</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="function"><span class="keyword">void</span> <span class="title">abort</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br></pre></td></tr></table></figure>
-<p>向进程发送SIGABORT信号，默认情况下进程会异常退出，当然可定义自己的信号处理函数。即使SIGABORT被进程设置为阻塞信号，调用abort()后，SIGABORT仍然能被进程接收。该函数无返回值。</p>
-<h2 id="信号生命周期"><a href="#信号生命周期" class="headerlink" title="信号生命周期"></a>信号生命周期</h2><p>对于一个完整的信号生命周期(从信号发送到相应的处理函数执行完毕)来说，可以分为三个重要的阶段，这三个阶段由四个重要事件来刻画：信号诞生；信号在进程中注册完毕；信号在进程中的注销完毕；信号处理函数执行完毕。 </p>
+<p>IPC_CREAT：这个标志表示应创建一个新的共享内存块。通过指定这个标志，我们能够创建一个具有指定键值的新共享内存块。</p>
+<p>IPC_EXCL：这个标志仅仅能与 IPC_CREAT 同一时候使用。当指定这个标志的时候。假设已有一个具有这个键值的共享内存块存在。则shmget会调用失败。</p>
+<p>也就是说，这个标志将使线程获得一个“独有”的共享内存块。假设没有指定这个标志而系统中存在一个具有相同键值的共享内存块。shmget会返回这个已经建立的共享内存块。而不是又一次创建一个。</p>
+<p>模式标志：这个值由9个位组成，分别表示属主、属组和其他用户对该内存块的訪问权限。如0777。当中表示运行权限的位将被忽略。</p>
+<h2 id="映射共享内存"><a href="#映射共享内存" class="headerlink" title="映射共享内存"></a>映射共享内存</h2><hr>
+<p>shmat()是用来同意本进程訪问一块共享内存的函数。将这个内存区映射到本进程的虚拟地址空间。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">shmat</span><span class="params">(<span class="keyword">int</span> shmid,<span class="keyword">char</span> *shmaddr，<span class="keyword">int</span> flag)</span></span></span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>參数</th>
+<th>描写叙述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>shmid</td>
+<td>那块共享内存的ID。是shmget函数返回的共享存储标识符</td>
+</tr>
+<tr>
+<td>shmaddr</td>
+<td>是共享内存的起始地址，假设shmaddr为0，内核会把共享内存映像到调用进程的地址空间中选定位置。假设shmaddr不为0，内核会把共享内存映像到shmaddr指定的位置。所以一般把shmaddr设为0。</td>
+</tr>
+<tr>
+<td>shmflag</td>
+<td>是本进程对该内存的操作模式。假设是SHM_RDONLY的话，就是仅仅读模式。其他的是读写模式</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>成功时，这个函数返回共享内存的起始地址。失败时返回-1。</p>
+</blockquote>
+<p>要让一个进程获取对一块共享内存的訪问。这个进程必须先调用 shmat（SHared Memory Attach，绑定到共享内存）。</p>
+<p>将 shmget 返回的共享内存标识符 SHMID 传递给这个函数作为第一个參数。</p>
+<p>该函数的第二个參数是一个指针。指向您希望用于映射该共享内存块的进程内存地址；假设您指定NULL则Linux会自己主动选择一个合适的地址用于映射。</p>
+<p>第三个參数是一个标志位，包括了下面选项：</p>
+<p>SHM_RND表示第二个參数指定的地址应被向下靠拢到内存页面大小的整数倍。假设您不指定这个标志，您将不得不在调用shmat的时候手工将共享内存块的大小按页面大小对齐。<br>SHM_RDONLY表示这个内存块将仅同意读取操作而禁止写入。 假设这个函数调用成功则会返回绑定的共享内存块相应的地址。通过 fork 函数创建的子进程同一时候继承这些共享内存块；</p>
+<p>假设需要，它们能够主动脱离这些共享内存块。 当一个进程不再使用一个共享内存块的时候</p>
+<h2 id="共享内存解除映射"><a href="#共享内存解除映射" class="headerlink" title="共享内存解除映射"></a>共享内存解除映射</h2><hr>
+<p>当一个进程不再须要共享内存时，须要把它从进程地址空间中多里。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">shmdt</span><span class="params">(<span class="keyword">char</span> *shmaddr)</span></span></span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>參数</th>
+<th>描写叙述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>shmaddr</td>
+<td>那块共享内存的起始地址</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>成功时返回0。失败时返回-1。</p>
+</blockquote>
+<p>应通过调用 shmdt（Shared Memory Detach。脱离共享内存块）函数与该共享内存块脱离。</p>
+<p>将由 shmat 函数返回的地址传递给这个函数。假设当释放这个内存块的进程是最后一个使用该内存块的进程，则这个内存块将被删除。</p>
+<p>对 exit 或不论什么exec族函数的调用都会自己主动使进程脱离共享内存块。</p>
+<h2 id="控制释放"><a href="#控制释放" class="headerlink" title="控制释放"></a>控制释放</h2><hr>
+<p>shmctl控制对这块共享内存的使用</p>
+<p>函数原型</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span>  <span class="title">shmctl</span><span class="params">( <span class="keyword">int</span> shmid , <span class="keyword">int</span> cmd , struct shmid_ds *buf )</span></span>;</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>參数</th>
+<th>描写叙述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>shmid</td>
+<td>是共享内存的ID。</td>
+</tr>
+<tr>
+<td>cmd</td>
+<td>控制命令</td>
+</tr>
+<tr>
+<td>buf</td>
+<td>一个结构体指针。IPC_STAT的时候，取得的状态放在这个结构体中。假设要改变共享内存的状态，用这个结构体指定。</td>
+</tr>
+</tbody>
+</table>
+<p>当中cmd的取值例如以下</p>
+<table>
+<thead>
+<tr>
+<th>cmd</th>
+<th>描写叙述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IPC_STAT</td>
+<td>得到共享内存的状态</td>
+</tr>
+<tr>
+<td>IPC_SET</td>
+<td>改变共享内存的状态</td>
+</tr>
+<tr>
+<td>IPC_RMID</td>
+<td>删除共享内存</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>返回值： 成功：0 失败：-1</p>
+</blockquote>
+<p>调用 shmctl（”Shared Memory Control”，控制共享内存）函数会返回一个共享内存块的相关信息。同一时候 shmctl 同意程序改动这些信息。</p>
+<p>该函数的第一个參数是一个共享内存块标识。<br>要获取一个共享内存块的相关信息，则为该函数传递 IPC_STAT 作为第二个參数，同一时候传递一个指向一个 struct shmid_ds 对象的指针作为第三个參数。</p>
+<p>要删除一个共享内存块，则应将 IPC_RMID 作为第二个參数。而将 NULL 作为第三个參数。</p>
+<p>当最后一个绑定该共享内存块的进程与其脱离时，该共享内存块将被删除。</p>
+<p>您应当在结束使用每一个共享内存块的时候都使用 shmctl 进行释放，以防止超过系统所同意的共享内存块的总数限制。</p>
+<p>调用 exit 和 exec 会使进程脱离共享内存块，但不会删除这个内存块。</p>
+<p>要查看其他有关共享内存块的操作的描写叙述，请參考shmctl函数的手冊页。</p>
+<h1 id="演示样例"><a href="#演示样例" class="headerlink" title="演示样例"></a>演示样例</h1><hr>
+<h2 id="简单映射一块共享内存"><a href="#简单映射一块共享内存" class="headerlink" title="简单映射一块共享内存"></a>简单映射一块共享内存</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/ipc.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/shm.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IPCKEY 0x366378</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">st_setting</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">char</span> agen[<span class="number">10</span>];</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> file_no;</span><br><span class="line">&#125;st_setting;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span>         shm_id;</span><br><span class="line">    <span class="comment">//key_t       key;</span></span><br><span class="line">    st_setting  *p_setting;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//  首先检查共享内存是否存在，存在则先删除</span></span><br><span class="line">    shm_id = shmget(IPCKEY , <span class="number">1028</span>, <span class="number">0640</span>);</span><br><span class="line">    <span class="keyword">if</span>(shm_id != <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        p_setting = (st_setting *)shmat(shm_id, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (p_setting != (<span class="keyword">void</span> *)<span class="number">-1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            shmdt(p_setting);</span><br><span class="line"></span><br><span class="line">            shmctl(shm_id,IPC_RMID,<span class="number">0</span>) ;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//  创建共享内存</span></span><br><span class="line">    shm_id = shmget(IPCKEY, <span class="number">1028</span>, <span class="number">0640</span> | IPC_CREAT | IPC_EXCL);</span><br><span class="line">    <span class="keyword">if</span>(shm_id == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"shmget error\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//  将这块共享内存区附加到自己的内存段</span></span><br><span class="line">    p_setting = (st_setting *)shmat(shm_id, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">strncpy</span>(p_setting-&gt;agen, <span class="string">"gatieme"</span>, <span class="number">10</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"agen : %s\n"</span>, p_setting-&gt;agen);</span><br><span class="line"></span><br><span class="line">    p_setting-&gt;file_no = <span class="number">1</span>;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"file_no : %d\n"</span>,p_setting-&gt;file_no);</span><br><span class="line"></span><br><span class="line">    system(<span class="string">"ipcs -m"</span>);<span class="comment">//  此时可看到有进程关联到共享内存的信息，nattch为1</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//  将这块共享内存区从自己的内存段删除出去</span></span><br><span class="line">    <span class="keyword">if</span>(shmdt(p_setting) == <span class="number">-1</span>)</span><br><span class="line">       perror(<span class="string">" detach error "</span>);</span><br><span class="line"></span><br><span class="line">    system(<span class="string">"ipcs -m"</span>);<span class="comment">//  此时可看到有进程关联到共享内存的信息。nattch为0</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//  删除共享内存</span></span><br><span class="line">    <span class="keyword">if</span> (shmctl( shm_id , IPC_RMID , <span class="literal">NULL</span> ) == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">" delete error "</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    system(<span class="string">"ipcs -m"</span>);<span class="comment">//  此时可看到有进程关联到共享内存的信息，nattch为0</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> EXIT_SUCCESS;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="http://img.blog.csdn.net/20160329155902306" alt="这里写图片描写叙述"></p>
+<h2 id="ipcrm命令删除共享内存"><a href="#ipcrm命令删除共享内存" class="headerlink" title="ipcrm命令删除共享内存"></a>ipcrm命令删除共享内存</h2><p>在使用共享内存。结束程序退出后。假设你没在程序中用shmctl()删除共享内存的话。一定要在命令行下用ipcrm命令删除这块共享内存。</p>
+<p>你要是无论的话，它就一直在那儿放着了。</p>
+<p>简单解释一下ipcs命令和ipcrm命令。</p>
+<p>取得ipc信息：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">usage : ipcs -asmq -tclup </span><br><span class="line">    ipcs [-s -m -q] -i id</span><br><span class="line">    ipcs -h <span class="keyword">for</span> help.</span><br><span class="line">m      输出有关共享内存(shared memory)的信息</span><br><span class="line">-q      输出有关信息队列(message <span class="built_in">queue</span>)的信息</span><br><span class="line">-s      输出有关“遮断器”(semaphore)的信息</span><br></pre></td></tr></table></figure>
+<p>删除ipc</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">usage: ipcrm [ [-q msqid] [-m shmid] [-s semid]</span><br><span class="line">          [-Q msgkey] [-M shmkey] [-S semkey] ... ]</span><br></pre></td></tr></table></figure>
+<h1 id="消息队列"><a href="#消息队列" class="headerlink" title="消息队列"></a>消息队列</h1><p><a href="https://blog.csdn.net/wei_cheng18/article/details/79661495" target="_blank" rel="noopener">https://blog.csdn.net/wei_cheng18/article/details/79661495</a></p>
 
       
 
@@ -533,6 +443,17 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Linux学习总结</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -583,7 +504,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2019/03/29/Linux嵌入式笔记/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2019/04/01/Linux进程间通信2/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -597,9 +518,18 @@
   
 <nav id="article-nav">
   
+    <a href="/2019/04/01/Linux线程/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          Linux线程
+        
+      </div>
+    </a>
   
-    <a href="/2019/03/22/内存池/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">内存池</div>
+  
+    <a href="/2019/04/01/Linux之IO操作/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">Linux之IO操作</div>
       <i class="icon-circle-right"></i>
     </a>
   
@@ -741,6 +671,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">深度探索C++对象模型-学习总结</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">Linux学习总结</a>
               </li>
             
             <div class="clearfix"></div>
